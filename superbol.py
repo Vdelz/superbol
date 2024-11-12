@@ -323,7 +323,13 @@ print('\n######### Step 1: input files and filters ##########')
 useInt = 'n'
 
 # SN name defines names of input and output files
-sn = input('\n> Enter SN name:   ')
+files = os.listdir("example")
+sn_available = list(set([f.split("_")[0] for f in files if "README" not in f]))
+print(sn_available)
+print('\n> Enter SN name:   '+sn_available[0])
+sn = sn_available[0]
+#sn = input('\n> Enter SN name:   ')
+
 
 if not sn:
     print('\n* No name given; lets just call it `SN`...')
@@ -336,7 +342,9 @@ if not os.path.exists(outdir): os.makedirs(outdir)
 
 
 # Get photometry files
-do1 = input('\n> Find input files automatically?[y]   ')
+do1 = "y"
+print('\n> Find input files automatically?[y]   '+do1)
+#do1 = input('\n> Find input files automatically?[y]   ')
 if not do1: do1='y'
 # User will almost always want to do this automatically, if files follow naming convention!
 
@@ -352,7 +360,10 @@ if do1 == 'y':
         for i in range(len(files)):
             print('  ', i, ':', files[i])
 
-        use = input('\n> Use interpolated LC? (e.g. 0,2 for files 0 and 2, or n for no) [0]\n (Warning: using multiple interpolation files can cause problems unless times match!)   ')
+        use = 'n'
+        print('\n> Use interpolated LC? (e.g. 0,2 for files 0 and 2, or n for no) [0]')
+        print(' (Warning: using multiple interpolation files can cause problems unless times match!)   '+use)
+        #use = input('\n> Use interpolated LC? (e.g. 0,2 for files 0 and 2, or n for no) [0]\n (Warning: using multiple interpolation files can cause problems unless times match!)   ')
         # Default is to read in the first interpolation file
         # Multiple interpolations can be read using commas, BUT if time axes don't match then the phases can end up incorrectly defined for some bands!!!
         if not use: use1.append(0)
@@ -378,7 +389,9 @@ if do1 == 'y':
             for i in range(len(files)):
                 print('  ', i, ':', files[i])
 
-            use = input('\n> Specify files to use (e.g. 0,2 for files 0 and 2) [all]   ')
+            use = ""
+            print('\n> Specify files to use (e.g. 0,2 for files 0 and 2) [all]   ')
+            # use = input('\n> Specify files to use (e.g. 0,2 for files 0 and 2) [all]   ')
             if len(use)>0:
                 # Include only specified files
                 for i in use.split(','):
@@ -505,7 +518,9 @@ plt.tight_layout(pad=0.5)
 plt.draw()
 
 
-limitMJDs = input('\n> Limit time range to use? [n] ')
+limitMJDs = "n"
+print('\n> Limit time range to use? [n]   '+limitMJDs)
+#limitMJDs = input('\n> Limit time range to use? [n]   ')
 if not limitMJDs: limitMJDs = 'n'
 
 if limitMJDs == 'y':
@@ -546,7 +561,10 @@ print('\n######### Step 2: reference band for phase info ##########')
 print('\n* Displaying all available photometry...')
 
 # User can choose to include only a subset of filters, e.g. if they see that some don't have very useful data
-t3 = input('\n> Enter bands to use (blue to red) ['+filters+']   ')
+t3 = filters
+print('\n> Enter bands to use (blue to red) ['+filters+']   '+t3)
+#print([wle[filt] for filt in filters])
+#t3 = input('\n> Enter bands to use (blue to red) ['+filters+']   ')
 if not t3: t3 = filters
 
 filters = ''
@@ -572,7 +590,9 @@ for i in filters:
 
 # If using light curves that have not yet been interpolated by a previous superbol run, we need a reference filter
 if useInt!='y':
-    ref = input('\n> Choose reference band(s) for sampling epochs (Comma delimited)\n   Suggested (most LC points): ['+ref3+']   ')
+    ref = ref3
+    print('\n> Choose reference band(s) for sampling epochs (Comma delimited)\n   Suggested (most LC points): ['+ref3+']   '+ref)
+    #ref = input('\n> Choose reference band(s) for sampling epochs (Comma delimited)\n   Suggested (most LC points): ['+ref3+']   ')
     # Defaults to the band with the most data
     if not ref: ref = ref3
     ref_list = ref.split(',')
@@ -596,7 +616,9 @@ ref_stack = ref_stack[ref_stack[:,0].argsort()]
 
 # User may want to have output in terms of days from maximum, so here we find max light in reference band
 # Two options: fit light curve interactively, or just use brightest point. User specifies what they want to do
-t1 = input('\n> Interactively find maximum?[n] ')
+t1 = "n"
+print('\n> Interactively find maximum?[n]   '+t1)
+#t1 = input('\n> Interactively find maximum?[n] ')
 if not t1:
     # Default to not doing interactive fit
     t1 = 'n'
@@ -753,7 +775,9 @@ plt.draw()
 skipK = 'n'
 
 # Input redshift or distance modulus, needed for flux -> luminosity
-z = input('\n> Please enter SN redshift or distance modulus:[0]  ')
+z = '10'
+print('\n> Please enter SN redshift or distance modulus:[0]   '+z)
+#z = input('\n> Please enter SN redshift or distance modulus:[0]   ')
 # Default to zero
 if not z: z=0
 z = float(z)
@@ -871,7 +895,9 @@ if useInt!='y':
         lc_int[ref_list[0]] = lc[ref_list[0]]
 
     # User decides whether to fit each light curve
-    t4 = input('\n> Interpolate light curves interactively?[y] ')
+    t4 = "y"
+    print('\n> Interpolate light curves interactively?[y] '+t4)
+    #t4 = input('\n> Interpolate light curves interactively?[y] ')
     # Default is yes
     if not t4: t4 = 'y'
 
@@ -912,7 +938,9 @@ if useInt!='y':
                     plt.draw()
 
                     # Choose order of polynomial fit to use
-                    order = input('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   ')
+                    order = 'q'
+                    print('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   '+order)
+                    #order = input('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   ')
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if order == 'q':
                         break
@@ -940,7 +968,9 @@ if useInt!='y':
                     plt.draw()
 
                     # Check if happy with fit
-                    happy = input('\n> Happy with fit?(y/[n])   ')
+                    happy = 'y'
+                    print('\n> Happy with fit?(y/[n])   '+happy)
+                    #happy = input('\n> Happy with fit?(y/[n])   ')
                     # Default to no
                     if not happy: happy = 'n'
 
@@ -1034,7 +1064,9 @@ if useInt!='y':
 
                     if len(tmp[tmp[:,0]<low])>0:
                         # If there are early extrapolated points, ask user whether they prefer polynomial, constant colour, or want to hedge their bets
-                        extraptype = input('\n> Early-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?\n')
+                        extraptype = 'p'
+                        print('\n> Early-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?   '+extraptype)
+                        #extraptype = input('\n> Early-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?\n')
                         # Default to polynomial
                         if not extraptype: extraptype = 'p'
                         if extraptype == 'c':
@@ -1051,7 +1083,9 @@ if useInt!='y':
 
                     # Now do same for late times
                     if len(tmp[tmp[:,0]>up])>0:
-                        extraptype = input('\n> Late-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?\n')
+                        extraptype = 'c'
+                        extraptype = input('\n> Late-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?    '+extraptype)
+                        #extraptype = input('\n> Late-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?\n')
                         if not extraptype: extraptype = 'p'
                         if extraptype == 'c':
                             tmp[:,1][tmp[:,0]>up]=late
@@ -1129,8 +1163,10 @@ else:
 print('\n######### Step 5: Extinction and K-corrections #########')
 
 # Extinction correction
-ebv = input('\n> Please enter Galactic E(B-V): \n'
-                        '  (0 if data are already extinction-corrected) [0]   ')
+ebv = '0'
+print('\n> Please enter Galactic E(B-V): \n'+'  (0 if data are already extinction-corrected) [0]   ',ebv)
+#ebv = input('\n> Please enter Galactic E(B-V): \n'
+#                        '  (0 if data are already extinction-corrected) [0]   ')
 if not ebv: ebv=0
 ebv = float(ebv)
 
@@ -1157,7 +1193,9 @@ for i in lc_int:
 print('\nDefault photometric systems:')
 print(default_sys)
 
-is_correct_system = input('\n> Are all bands in their default systems? ([y]/n)  ')
+is_correct_system = 'y'
+print('\n> Are all bands in their default systems? ([y]/n)  ',is_correct_system)
+#is_correct_system = input('\n> Are all bands in their default systems? ([y]/n)  ')
 if not is_correct_system: is_correct_system = 'y'
 
 systems = {}
@@ -1262,7 +1300,9 @@ Lbb_opt_err_arr = []
 bluecut = 1
 sup = 0
 
-do_absorb = input('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ')
+do_absorb = 'n'
+print('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ',do_absorb)
+#do_absorb = input('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ')
 if not do_absorb: do_absorb = 'n'
 
 if do_absorb in ('y','yes'):
@@ -1277,14 +1317,18 @@ if do_absorb in ('y','yes'):
 # NOTE: at some point should give option to make these free parameters...
 
 
-T_init = input('\n> Initial guess for starting temperature [10000 K]?   ')
+T_init = '10000'
+print('\n> Initial guess for starting temperature [10000 K]?   ',T_init)
+#T_init = input('\n> Initial guess for starting temperature [10000 K]?   ')
 if not T_init: T_init = 10000
 T_init = float(T_init)
 
 T_init /= 1000
 
 
-R_init = input('\n> Initial guess for starting radius [1.0e15 cm]?   ')
+R_init = '1.0e15'
+print('\n> Initial guess for starting radius [1.0e15 cm]?   ',R_init)
+#R_init = input('\n> Initial guess for starting radius [1.0e15 cm]?   ')
 if not R_init: R_init = 1.0e15
 R_init = float(R_init)
 
@@ -1548,4 +1592,4 @@ plt.savefig(outdir+'/results_'+sn+'_'+filters+'.pdf')
 
 
 # Wait for key press before closing plots!
-fin = input('\n\n> PRESS RETURN TO EXIT...\n')
+#fin = input('\n\n> PRESS RETURN TO EXIT...\n')
