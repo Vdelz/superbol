@@ -324,7 +324,7 @@ useInt = 'n'
 
 # SN name defines names of input and output files
 files = os.listdir("example")
-sn_available = list(set([f.split("_")[0] for f in files if "README" not in f]))
+sn_available = list(set(["_".join(f.split("_")[:-1]) for f in files if "README" not in f]))
 print(sn_available)
 print('\n> Enter SN name:   '+sn_available[0])
 sn = sn_available[0]
@@ -380,7 +380,7 @@ if do1 == 'y':
     if len(files)==0 or use=='n':
         # And here is if we don't have (or want) previously interpolated data
         # search for any files matching with SN name
-        files = glob.glob(sn+'_*')
+        files = glob.glob("**/"+sn+'_*', recursive=True)
 
         if len(files)>0:
             # If files are found, print them and let the user choose which ones to read in
