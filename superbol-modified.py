@@ -100,30 +100,107 @@ import sys
 import os
 # If you don't have astropy, can comment this out, and uncomment cosmocalc routine
 from astropy.coordinates import Distance
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import Matern, RBF, RationalQuadratic, ExpSineSquared, WhiteKernel, ConstantKernel
 #from lmfit import Parameters, Model
 import warnings
-
+from gp import apply_gaussian_process_gpy
 #suppress warnings
 warnings.filterwarnings('ignore')
 
 # print 'cool' logo
-print('\n    * * * * * * * * * * * * * * * * * * * * *')
-print('    *                                       *')
-print('    *        Welcome to `SUPER BOL`!        *')
-print('    *   SUPernova BOLometric light curves   *')
-print('    *                                       *')
-print('    *                                       *')
-print('    *                                       *')
-print('    *                                       *')
-print('    *                                       *')
-print('    *                                       *')
-print('    *                                       *')
-print('    *   Matt Nicholl (2018, RNAAS, 2, 230)  *')
-print('    *                 V'+version+'                *')
-print('    *                                       *')
-print('    * * * * * * * * * * * * * * * * * * * * *\n\n')
+# print('\n    * * * * * * * * * * * * * * * * * * * * *')
+# print('    *                                       *')
+# print('    *        Welcome to `SUPER BOL`!        *')
+# print('    *   SUPernova BOLometric light curves   *')
+# print('    *                                       *')
+# print('    *                                       *')
+# print('    *                                       *')
+# print('    *                                       *')
+# print('    *                                       *')
+# print('    *                                       *')
+# print('    *                                       *')
+# print('    *   Matt Nicholl (2018, RNAAS, 2, 230)  *')
+# print('    *                 V'+version+'                *')
+# print('    *                                       *')
+# print('    * * * * * * * * * * * * * * * * * * * * *\n\n')
+
+print("-------++++++++++-::::::::::::::::::::---===+++===+++++++=-::::::::::::::::::::::::::::::::-----:...")
+print("---=++-++++++++++-:::::::::::::::::==+**+*++**********#####**+=-::::::::::::::::::::::::::::::----:.")
+print("=+++++-++++++++++-::::::::::::::-+++**************#############*+=---:::::::::::::::::::::::::::----")
+print("++++++-++++++++++-:::::::::::--=++*###*###***###################****+=-:::::::::::::::::::::::::::--")
+print("++++++-+++++++++=-:::::::::-=+++****##***********#####################*+-:::::::::::::::::::::::::::")
+print("+++++==+++++++++=-::::::--==++*+*******************############****#####*+=-::::::::::::::::::::::::")
+print("+++++==+++++++++=-::::-=---=+++++*******++*++*++************++++++++++**###*=-::::::::::::::::::::::")
+print("+++++==+++++++++=-::-==----=====+++++++=+========================+++====+*###*=:::::::::::::::::::::")
+print("+++++==+++++++++=-----::::::::------===-=========----======================+###+-:::::::::::::::::::")
+print("+++++==+++++++++=--::........::::::--------------------=====================+*##+:::::::::::::::::::")
+print("+++++==+++++++++--::..........::::-----------------=======-==================+*##*-:::::::::::::::::")
+print("+++++==++++++++=-:...........:::--------------================================+*##*-::::::::::::::::")
+print("+++++==++++++=--:...........::::-----------====-=======================+=======+###=::::::::::::::::")
+print("+++++==++++++==-:.........::::----------==============================++++=++===*##*-:::::::::::::::")
+print("++++===+++++===-:.......::::-----------=============================+++++++++++++*##+-::::::::::::::")
+print("++++=-+++++====:::.....::::------------============================+++++++++++++++###=::::::::::::::")
+print("+++++-+++++===-::::::::::----------------==========================+++++++++++++++*##*-:::::::::::::")
+print("+++++-++++++==-:::::::::----------------============================+=++++++++++++*###+:::::::::::::")
+print("+++++-++++===+-:::::::::------------------=============================++++++++++**#%%*:::::::::::::")
+print("+++++=++++=+++-:::::::::---------------------=---=====-================++++++++++**####-::::::::::::")
+print("****+=++++=+++-::::::::------------------------========-===============++++++++++**####=::::::::::::")
+print("%##%*=++++++++=-:::::::::---------------------========================+==+++++++++*##%#*::::::::::::")
+print("#%#%*=++++++*+=-::::::::-----------------=-======================+++++++++++++++++*##%%#-:::::::::::")
+print("###%*=++++=**+=-::::::::--------------======================+=+++++++++++++++++++++##%%#=:::::::::::")
+print("###%*=++++=***==-:::::::---------=====================+++++++*******#######**++++++*#%%%+:::::::::::")
+print("###%*=++++=***+-::::::::----=======+++++++++=======++++***########%%%%########*++++*##%%#-::::::::::")
+print("###%+=+++=++**=-:::::::-==+++***************+======+***#############********####*++*#%%%#-::::::::::")
+print("##%%+=+++++***+-::::-==+*###############****++++==++***####*******************###*+*#%%%%-::::::::::")
+print("###%+=+++++***+-:::-=++********************+*+++++++******+++******#******+++++***+*#%%%#+-:::::::::")
+print("###%+==+++++**=----------====+++*****++=--=+++++++++***++**********########**+++**++*###+++=::::::::")
+print("###%++++=::++++-:::------=++****####**++====********##******#**+***#%%#*####**+++****+++++*+::::::::")
+print("###%+=++=::=++*-:::----=++***#######**+*++++*+=----=+**#***###**##*###**####****+++*++=++***-:::::::")
+print("####=++++--*++*-:::---=++*#+-=*####*++***++**+------=***#******#***######*******+++++***+***-:::::::")
+print("####=++++=--=+*-:::---=+++***+*####*++****+*+=------=+**#***********************+++++**#***+::::::::")
+print("####=++++=-==+=-:::----==++++***********+-=+=---:---==+*++*****************++++++++++++#*+*-::::::::")
+print("####=+++++=--+-:::::-----==++++++++++++==-==----::---=+++++++++******++++++++++++++++++#*++:::::::::")
+print("###*=+++++=-:==::::::--------==---===----------:::---=+++++++++++++++++++++++++++++++++**++:::::::::")
+print("###*=++++++=:--:::::::-------------------------:::---==++++++++++++++++++++++++++++++++#**+:::::::::")
+print("###*=+++++==--=:::::::::----------------------:::----===++++++++++++++++++++++++++++++*#*+=:::::::::")
+print("###*==++++==-:--::::::::---------------------:::----=====+++++++++++++++++++++++++++++*#++-:::::::::")
+print("###*=+++++===::-:::::::--------------------:::----========++++++++++++++++++++++++++++**++-:::::::::")
+print("###+=++++++=+-::::::::---------------------------======+++==++++++++++++++++++++++++++**+=::::::::::")
+print("###+=++++++++=:--:::::---------------===---=++=--=====+*##*+++++++++++++++++++++++++++#*+=::::::::::")
+print("***+=+++++++++-:-::::::------------======-=+##*+=====++******++++++++++++++++++++++++*#*+=::::::::::")
+print("+**==+++++=+++-:-:::::::-----------==++===++++*****+***###***++++++++++++++++++++++++*#*+=::::::::::")
+print("+++==+++++++++-:--:::::::---------===+=====++######*#######***+++++++++++++++++*+++++*#*=:::::::::::")
+print("+++=++++++=+++-:-=-:::::---------==========+*##%%%###%%%%%%##***++++++++++++++++++++**#=-:::::::::::")
+print("+++==+++++++++-::--:::---------==========+*####%%%%%%%%%%%%%%###****+++++++++++++****##=::::::::::::")
+print("+++-==++++++++-:::=-:---------========++**########%%%%%%%%%%%%%%###*****++++++*+*****#*-::::::::::::")
+print("+**==+++++++++-:::-----------======+****####***+++******#####%%%%%%###***++++++******#+-::::::::::::")
+print("*+*=++++++++++-:::-----------===++*#######****************######%%%%%##**+++*******###+-::::::::::::")
+print("***=++++++++++-:::-=---------==+*#####*++****#######***###%%%%%%%%#%%%##**++******####+:::::::::::::")
+print("#**=++++++++++-::::=---------==+*########*****#****###**#***#####*######*++******####*-:::::::::::::")
+print("#*==++++++++++-::::-=---------==*###***+++++++++++***************************########+-:::::::::::::")
+print("::.:::-:::::::::.:::----------==+***+=======+++++***********++**+***********########*=::::::::::::::")
+print("-:::::::::::::::...:-===----====++++===--=====+++*************++++**********########*-::::::::::::::")
+print(":::::::::::::::.::.::=+==========+++=======+++**####%%#######*++++*********####%%##*-:::::::::::::::")
+print("....................:-++++++====+++========++**###%%%%%%###**++++**********###%%%%#+::::::::::::::::")
+print("....::...............:=++++++===+++=========+**###%%%%%%##***++*******###**##%%%%%*-::::::::::::::::")
+print(".....................::+****++=+++++=======++++*##########**********#########%%%%*=:::::::::::::::::")
+print("......................:-*#**+++***++=======++++**###*########****########%#%%%%%%#=-::::::::::::::::")
+print(".......................:-*##*******+++++++++***###########%%%##########%%%%%%%%%#**=------::::::::::")
+print(".........................:*###*####***+++++*##########%%%%%%%######%%%%%%%%%%%%#****===+++=-::::::::")
+print("...:::...................:=*#########**+**####%%#####%%%%%%%%%%%%%%%%%%%%%%%%%#******+***+++-:::::::")
+print("::::::::::::::::::::...::--=*#%#############%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%##**********++++-::::::")
+print(":::::::::::::::::::...::--=++=*#%%%%%%#####%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%###*****#****+++=-:::::")
+print("............::.....::::--=+*=-=+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%###********##**++++==-:::")
+print("............::...::::--==++*----+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%####*********###*+++++==-::")
+print("................:::--===++#*----=+*#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#####**********###*++++++====")
+print("...............:::-===+++*#*=----==+*#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%########*********####**+++++====")
+print(".............::::--=+++++*#*=-----==+++*#%%%%%%%%%%%%%%%%%%%%%%%%###*****************####**+++++++++")
+print("......:::::...:::--=++++*##*+=----===++++**#%%%%%%%%%%%%%%%%%%##*********************####**+++++++++")
+print(".::::::::.....:::--==++**##*+=-----===+++++++***############************************#####**+++++++++")
+print("::::-:......::::---==++**##*+=-----===++++++++++************************************#####**+++++++--")
+print(":..:........::::---==++*###*++=-----===+++++++++*+**********************************#####*+++++=----")
+print("--::........::::--===++*##**++=-----====++++++++++**********************************###%#*+++------:")
+print("################################Superbol modificato da Giuseppe Puglisi#############################")
+
 
 # interactive plotting
 plt.ion()
@@ -164,53 +241,6 @@ def easyint(x,y,err,xref,yref):
 
     return yout,errout
 
-
-def apply_gaussian_process(times, luminosities, new_times, kernel_choice="Matern", **kernel_params):
-    """
-    Estrapola e corregge le curve bolometriche usando un Gaussian Process con kernel selezionabile.
-
-    Args:
-        times (array-like): Tempi osservati (1D).
-        luminosities (array-like): Luminosità associate ai tempi (1D).
-        new_times (array-like): Nuovi tempi per l'estrapolazione (1D).
-        kernel_choice (str): Kernel scelto (opzioni: "Matern", "RBF", "RationalQuadratic",
-                            "ExpSineSquared", "DotProduct", "WhiteKernel").
-        **kernel_params: Parametri aggiuntivi per il kernel.
-
-    Returns:
-        tuple: Predizioni e incertezze (std).
-    """
-    # Definizione kernel disponibili
-    kernels = {
-        "Matern": Matern(**kernel_params) + ConstantKernel(**kernel_params),
-        "RBF": RBF(**kernel_params) + ConstantKernel(**kernel_params),
-        "RationalQuadratic": RationalQuadratic(**kernel_params),
-        "ExpSineSquared": ExpSineSquared(**kernel_params),
-        "WhiteKernel": WhiteKernel(**kernel_params),
-        "ConstantKernel": ConstantKernel(**kernel_params)
-
-    }
-
-    # Assicura numpy array in forma corretta
-    times = np.array(times).reshape(-1, 1)
-    luminosities = np.array(luminosities)
-    new_times = np.array(new_times).reshape(-1, 1)
-
-    # Controlla kernel scelto
-    if kernel_choice not in kernels:
-        raise ValueError(f"Kernel '{kernel_choice}' not supported. Choose between {', '.join(kernels.keys())}")
-    kernel = kernels[kernel_choice]
-
-    # Modello di Gaussian Process
-    gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
-
-    # Addestramento del modello
-    gp.fit(times, luminosities)
-
-    # Predizione sui nuovi dati
-    predictions, uncertainties = gp.predict(new_times, return_std=True)
-
-    return predictions, uncertainties
 
 
 
@@ -930,87 +960,101 @@ if useInt!='y':
     # Use need to choose if gaussian process or polinomyal fit
 
     print("What method do you want to use for the fit?")
-    print("1: Polinomyal fit")
+    print("1: Polynomial fit")
     print("2: Gaussian process fit")
-    use_gp = input("Insert the number of preferred method ((1-2) [2]: ").strip()
-
+    use_gp = input("Insert the number of the preferred method (1-2) [2]: ").strip()
 
     use_gp_map = {
-        '1': "Polinomyal fit",
+        '1': "Polynomial fit",
         '2': "Gaussian process fit"
     }
 
-    selected_gp = use_gp_map.get(use_gp, "Gaussian process fit")  # Default il Gaussian process
+    selected_gp = use_gp_map.get(use_gp, "Gaussian process fit")  # Default: Gaussian process
 
+    
     if use_gp == '2':
         print('\n### Begin Gaussian Process fit... ###')
 
-        # Dizionario per salvare i risultati del Gaussian Process
-        lc_int_gp = {}
-         # Use this to keep tabs on method used, and append to output file
+
+        #ref_luminosities = ref_stack[:, 1]
+
         intKey = '\n# Reference bands: '
         for refband in ref_list:
             intKey += refband
-
-
+            
         for band in filters:
-            
-
-            # if n_refs == 1 and band in ref_list:
-            #     print(f'\n### Reference Band is {band} ###')
-            #     pass
-            
             if band in ref_list:
                 print(f'\n### Reference Band is {band} ###')
                 continue
-            
+
+
             print(f'\n### Gaussian Process for {band}-band ###')
-            
-                
-            #else:
+
             valid = ~np.isnan(lc[band][:, 1])  
             times = lc[band][valid, 0]  #zp_AB[band] * 10**(-0.4 * mags)  #Conversione in un fusso lineare
             luminosities = lc[band][valid, 1]
-            new_times = ref_stack[:, 0]  
+            new_times = ref_stack[:, 0]
 
             happy_gp = 'n'
             while happy_gp == 'n':
-                # Scegli il kernel
-                print("\nChoose the appropriate kernel for Gaussian Process fit:")
-                print("1: Matern")
-                print("2: RBF")
-                print("3: RationalQuadratic")
-                print("4: ExpSineSquared")
-                print("5: WhiteKernel")
-                kernel_choice = input("Inserisci il numero del kernel scelto (1-5) [1]: ").strip()
+                print("\nChoose one or more kernels for Gaussian Process fit by entering their numbers (e.g., 1,3,7):")
+                print("1: Matern (ν = 1/2)")
+                print("2: Matern32 (ν = 3/2)")
+                print("3: Matern52 (ν = 5/2)")
+                print("4: RBF")
+                print("5: Exponential")
+                print("6: RationalQuadratic")
+                print("7: Periodic")
+                print("8: Brownian")
 
                 kernel_map = {
-                    '1': "Matern",
-                    '2': "RBF",
-                    '3': "RationalQuadratic",
-                    '4': "ExpSineSquared",
-                    '5': "WhiteKernel"
+                    '1': "Matern12",
+                    '2': "Matern32",
+                    '3': "Matern52",
+                    '4': "RBF",
+                    '5': "Exponential",
+                    '6': "RationalQuadratic",
+                    '7': "Periodic",
+                    '8': "Brownian"
                 }
 
-                selected_kernel = kernel_map.get(kernel_choice, "Matern")  # Default a Matérn
-                print(f"\nFitting {band}-band with {selected_kernel} kernel...")
+                kernel_choices = input("Enter kernel numbers separated by commas [2,3]: ").strip().split(',')
+                kernel_choices = [kernel_map.get(k.strip(), "Matern32") for k in kernel_choices if k.strip()]
+                if not kernel_choices:
+                    kernel_choices = ["Matern32", "Matern52"]
+
+                kernel_params_list = []
+                for kernel in kernel_choices:
+                    print(f"\nEnter parameters for the {kernel} kernel:")
+                    params = {}
+                    if kernel in ["Matern12", "Matern32", "Matern52", "RBF", "Exponential", "RationalQuadratic", "Periodic"]:
+                        params["lengthscale"] = float(input("  Lengthscale [10.0]: ") or 10.0)
+                        params["variance"] = float(input("  Variance [1.0]: ") or 1.0)
+                   
+                    # Brownian and Spline do not require parameters
+                    kernel_params_list.append(params)
+
+                print(f"\nFitting {band}-band with kernels: {', '.join(kernel_choices)}")
 
                 try:
-                    #
-                    predictions, uncertainties = apply_gaussian_process(
-                        times, luminosities, new_times, kernel_choice=selected_kernel
+                    # Calcola la correzione basata sulla banda di riferimento
+                    correction = ref_stack[:,1] - np.mean(ref_stack[:,1])
+
+                    # Esegui l'interpolazione con Gaussian Process
+                    corrected_predictions, predictions, uncertainties = apply_gaussian_process_gpy(
+                        times, luminosities, new_times, kernel_choices, kernel_params_list, correction=correction
                     )
 
-                
                     lc_int[band] = np.column_stack((new_times, predictions, uncertainties))
 
-                    
+                    # Visualizza il fit
                     plt.clf()
                     plt.errorbar(times, luminosities, lc[band][valid, 2], fmt='o', color=cols[band], label=f'{band}-band')
-                    plt.errorbar(ref_stack[:, 0], ref_stack[:, 1], ref_stack[:, 2], fmt='o', color='0.5', label='Ref band')
+                    plt.errorbar(ref_stack[:,0], ref_stack[:,1], ref_stack[:,2], fmt='o', color='0.5', label="Ref_band")
                     plt.plot(new_times, predictions, color='b', label='GP fit')
                     plt.fill_between(new_times, predictions - uncertainties, predictions + uncertainties,
                                      color='b', alpha=0.2, label='GP uncertainty')
+                    plt.plot(new_times, corrected_predictions, color='r', linestyle='--', label='Corrected fit')
                     plt.gca().invert_yaxis()
                     plt.legend(numpoints=1, fontsize=16, ncol=2, frameon=True)
                     plt.xlabel(xlab)
@@ -1022,12 +1066,12 @@ if useInt!='y':
                     print(f"Error in Gaussian Process fit: {e}")
                     continue
 
-                # Chiedi all'utente se è soddisfatto del fit
                 happy_gp = input('\n> Are you happy with the Gaussian Process fit? (y/[n]): ').strip().lower()
                 if not happy_gp:
                     happy_gp = 'n'
 
         print("\n### Gaussian Process fitting completed! ###")
+
 
 
     elif use_gp == '1':
