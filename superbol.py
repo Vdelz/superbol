@@ -944,23 +944,25 @@ if useInt!='y':
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if order == 'q':
                         break
-                    # Or use default order
-                    if not order: order = order1
+                    else:
+                        # Or use default order
+                        if not order: order = order1
 
-                    order = int(order)
-                    # Set new default to current order
-                    order1 = order
+                        order = int(order)
+                        # Set new default to current order
+                        order1 = order
 
-                    # Fit light curve with polynomial
-                    fit = np.polyfit(lc[i][:,0],lc[i][:,1],deg=order)
+                        # Fit light curve with polynomial
+                        fit = np.polyfit(lc[i][:,0],lc[i][:,1],deg=order)
 
-                    # Plot fit
-                    days = np.arange(np.min([np.min(lc[i][:,0]),np.min(ref_stack[:,0])]), np.max([np.max(lc[i][:,0]),np.max(ref_stack[:,0])]))
-                    eq = 0
-                    for j in range(len(fit)):
-                        # Loop for arbitrary polynomial order
-                        eq += fit[j]*days**(order-j)
-                    plt.plot(days,eq,label='Fit order = %d' %order)
+                        # Plot fit
+                        days = np.arange(np.min([np.min(lc[i][:,0]),np.min(ref_stack[:,0])]), np.max([np.max(lc[i][:,0]),np.max(ref_stack[:,0])]))
+                        eq = 0
+                        for j in range(len(fit)):
+                            # Loop for arbitrary polynomial order
+                            eq += fit[j]*days**(order-j)
+                        plt.plot(days,eq,label='Fit order = %d' %order)
+    
                     plt.ylabel('Magnitude')
                     plt.xlabel(xlab)
                     plt.legend(numpoints=1,fontsize=16,ncol=2,frameon=True)
