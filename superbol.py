@@ -104,6 +104,7 @@ from astropy.coordinates import Distance
 #from lmfit import Parameters, Model
 import warnings
 
+from gp import gp_interpolate
 #suppress warnings
 warnings.filterwarnings('ignore')
 
@@ -902,9 +903,9 @@ if useInt!='y':
     if not t4: t4 = 'y'
 
     if t4=='y':
-        print('\n### Begin polynomial fit... ###')
+        print('\n### Begin fit... ###')
 
-        # Interpolate / extrapolate other bands to same epochs - polynomial fits
+        # Interpolate / extrapolate other bands to same epochs - fits
         # - what if there are only one or two points??? Use colour?
 
         # Use this to keep tabs on method used, and append to output file
@@ -919,8 +920,6 @@ if useInt!='y':
             else:
                 print('\n### '+i+'-band ###')
 
-                # Default polynomial order to fit light curves
-                order1 = 4
 
                 # Keep looping until happy
                 happy = 'n'
@@ -937,14 +936,23 @@ if useInt!='y':
                     plt.tight_layout(pad=0.5)
                     plt.draw()
 
-                    # Choose order of polynomial fit to use
-                    order = 'q'
-                    print('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   '+order)
-                    #order = input('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   ')
+                    algo = 'g'
+                    # Chose the type of algorithm to fit
+                    print('\n>> Chose type of algorithm to fit:')
+                    algo = input('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    ['+algo+']   ')
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
-                    if order == 'q':
+                    if algo == 'q':
                         break
-                    else:
+                    if algo == 'g':
+                        gp_interpolate(lc, lc_int, ref_stack, i, cols)
+                    if algo == 'p':
+                        
+                        # Default polynomial order to fit light curves
+                        order1 = 4
+                        # Choose order of polynomial fit to use
+                        order = order1
+                        print('\n>> Order of polynomial to fit?   ['+str(order1)+']   '+order)
+                        #order = input('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   ')
                         # Or use default order
                         if not order: order = order1
 
@@ -977,7 +985,7 @@ if useInt!='y':
                     if not happy: happy = 'n'
 
                 # If user quit polyfit, use easyint
-                if order == 'q':
+                if algo == 'q':
                     # This breaks if no overlap in time with ref band
                     tmp1,tmp2 = easyint(lc[i][:,0],lc[i][:,1],lc[i][:,2],ref_stack[:,0],ref_stack[:,1])
                     tmp = list(zip(ref_stack[:,0],tmp1,tmp2))
@@ -985,7 +993,10 @@ if useInt!='y':
                     print('\n* Interpolating linearly; extrapolating assuming constant colour...')
                     # Add method to output
                     intKey += '\n# '+i+': Linear interp; extrap=c'
-                else:
+                if algo == 'g':
+                    # TODO enable extrapolation using costant color
+                    intKey += '\n# '+i+': Gaussian Process used for interp and extrap'
+                if algo == 'p':
                     # If user was happy with fit, add different interpolation string to output
                     intKey += '\n# '+i+': fit order='+str(order)+'; extrap method '
 
