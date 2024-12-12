@@ -979,8 +979,8 @@ if useInt!='y':
 
                     # Check if happy with fit
                     happy = 'y'
-                    print('\n> Happy with fit?(y/[n])   '+happy)
-                    #happy = input('\n> Happy with fit?(y/[n])   ')
+                    #print('\n> Happy with fit?(y/[n])   '+happy)
+                    happy = input('\n> Happy with fit?(y/[n])   ')
                     # Default to no
                     if not happy: happy = 'n'
 
