@@ -105,6 +105,7 @@ from astropy.coordinates import Distance
 import warnings
 
 from gp import gp_interpolate
+from logo import print_logo
 #suppress warnings
 warnings.filterwarnings('ignore')
 
@@ -113,15 +114,9 @@ print('\n    * * * * * * * * * * * * * * * * * * * * *')
 print('    *                                       *')
 print('    *        Welcome to `SUPER BOL`!        *')
 print('    *   SUPernova BOLometric light curves   *')
-print('    *                                       *')
-print('    *                ______                 *')
-print('    *               {\   */}                *')
-print('    *                 \__/                  *')
-print('    *                  ||                   *')
-print('    *                 ====                  *')
-print('    *                                       *')
+print_logo()
 print('    *   Matt Nicholl (2018, RNAAS, 2, 230)  *')
-print('    *                 V'+version+'                *')
+print('    *                 V '+version+'                 *')
 print('    *                                       *')
 print('    * * * * * * * * * * * * * * * * * * * * *\n\n')
 
