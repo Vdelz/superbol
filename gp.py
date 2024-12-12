@@ -11,12 +11,31 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def get_kernels():
+use_gpy = False
+try:
+    import GPy
+    use_gpy = True
+except ImportError as err:
+    pass
+
+
+def get_kernels(gpy=use_gpy):
     """
     Returns a dictionary of available kernels
     We can make this list as long as we want the rest will update automatically
     """
-    kernels = {
+    if gpy:
+        kernels = {
+        "Matern32": GPy.kern.Matern32(input_dim=1),
+        "Matern52": GPy.kern.Matern52(input_dim=1),
+        "RBF": GPy.kern.RBF(input_dim=1),
+        "Exponential": GPy.kern.Exponential(input_dim=1),
+        "RationalQuadratic": GPy.kern.RatQuad(input_dim=1),
+        "Periodic": GPy.kern.PeriodicExponential(input_dim=1),
+        "Bias":GPy.kern.Bias(input_dim=1),
+    }
+    else: # use scikit learn
+        kernels = {
         "Matern (v = 3/2)": Matern(nu=3/2),
         "Matern (v = 5/2)": Matern(nu=5/2),
         "RBF": RBF(),
@@ -24,7 +43,7 @@ def get_kernels():
         "Constant": ConstantKernel(),
         "DotProduct": DotProduct(),
         "RationalQuadratic": RationalQuadratic(),
-    }
+        }
     return kernels
 
 
@@ -86,14 +105,20 @@ def apply_gaussian_process(times, luminosities, new_times, kernels_custom):
     times = np.array(times).reshape(-1, 1)
     luminosities = np.array(luminosities).reshape(-1, 1)
     new_times = np.array(new_times).reshape(-1, 1)
-    # combines custom kernels
-    combo_kernel = None
-    for ker in kernels_custom:
-        combo_kernel = ker if combo_kernel is None else combo_kernel + ker
     # initialize, trains the regressor and interpolates
-    gpr = GaussianProcessRegressor(kernel=combo_kernel, random_state=0)
-    gpr.fit(times, luminosities)
-    lc_predictions, lc_pred_err = gpr.predict(new_times, return_std=True)
+    if use_gpy:
+        combo_kernel = GPy.kern.src.add.Add(kernels_custom)
+        gpr = GPy.models.GPRegression(times, luminosities, combo_kernel)
+        gpr.optimize(messages=False)
+        lc_predictions, lc_pred_var = gpr.predict(new_times)
+        lc_pred_err = np.sqrt(lc_pred_var)
+    else: # use scikit learn
+        combo_kernel = None
+        for ker in kernels_custom:
+            combo_kernel = ker if combo_kernel is None else combo_kernel + ker
+        gpr = GaussianProcessRegressor(kernel=combo_kernel, random_state=0)
+        gpr.fit(times, luminosities)
+        lc_predictions, lc_pred_err = gpr.predict(new_times, return_std=True)
     return lc_predictions.flatten(), lc_pred_err.flatten()
 
 
