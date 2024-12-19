@@ -939,7 +939,7 @@ if useInt!='y':
 
                     algo = 'g'
                     # Chose the type of algorithm to fit
-                    print('\n>> Chose type of algorithm to fit:')
+                    #print('\n>> Chose type of algorithm to fit:')
                     algo = input('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    ['+algo+']   ')
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if algo == 'q':
@@ -1606,4 +1606,4 @@ plt.savefig(outdir+'/results_'+sn+'_'+filters+'.pdf')
 
 
 # Wait for key press before closing plots!
-#fin = input('\n\n> PRESS RETURN TO EXIT...\n')
+fin = input('\n\n> PRESS RETURN TO EXIT...\n')
