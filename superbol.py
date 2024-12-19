@@ -325,7 +325,7 @@ for root, dirs, fs in os.walk("example"):
         if ".txt" in file and "README" not in file:
             #files.append(os.path.join(root,file))
             files.append(file)
-#files = os.listdir("example")
+
 sn_available = list(set(["_".join(f.split("_")[:-1]) for f in files if "README" not in f]))
 print(sn_available)
 print('\n> Enter SN name:   '+sn_available[0])
@@ -338,7 +338,7 @@ if not sn:
     sn = 'SN'
 
 # Keep outputs in this directory
-outdir = 'Plot curves\superbol_output_'+sn
+outdir = os.path.join('superbol_output',sn)
 if not os.path.exists(outdir): os.makedirs(outdir)
 
 
