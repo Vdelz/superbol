@@ -31,7 +31,7 @@ def get_kernels(gpy=use_gpy):
         "RBF": GPy.kern.RBF(input_dim=1),
         "Exponential": GPy.kern.Exponential(input_dim=1),
         "RationalQuadratic": GPy.kern.RatQuad(input_dim=1),
-        "Periodic": GPy.kern.PeriodicExponential(input_dim=1),
+        #"Periodic": GPy.kern.PeriodicExponential(input_dim=1),
         "Bias":GPy.kern.Bias(input_dim=1),
     }
     else: # use scikit learn
