@@ -319,7 +319,12 @@ print('\n######### Step 1: input files and filters ##########')
 useInt = 'n'
 
 # SN name defines names of input and output files
-files = os.listdir("example")
+files = []
+for root, dirs, fs in os.walk("example"):
+    for file in fs:
+        if ".txt" in file and "README" not in file:
+            #files.append(os.path.join(root,file))
+            files.append(file)
 sn_available = list(set(["_".join(f.split("_")[:-1]) for f in files if "README" not in f]))
 print(sn_available)
 print('\n> Enter SN name:   '+sn_available[0])
@@ -332,7 +337,7 @@ if not sn:
     sn = 'SN'
 
 # Keep outputs in this directory
-outdir = 'superbol_output_'+sn
+outdir = os.path.join('superbol_output',sn)
 if not os.path.exists(outdir): os.makedirs(outdir)
 
 
@@ -933,7 +938,7 @@ if useInt!='y':
 
                     algo = 'g'
                     # Chose the type of algorithm to fit
-                    print('\n>> Chose type of algorithm to fit:')
+                    #print('\n>> Chose type of algorithm to fit:')
                     algo = input('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    ['+algo+']   ')
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if algo == 'q':
@@ -1609,4 +1614,4 @@ plt.savefig(outdir+'/results_'+sn+'_'+filters+'.pdf')
 
 
 # Wait for key press before closing plots!
-#fin = input('\n\n> PRESS RETURN TO EXIT...\n')
+fin = input('\n\n> PRESS RETURN TO EXIT...\n')
