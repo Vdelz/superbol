@@ -325,6 +325,7 @@ for root, dirs, fs in os.walk("example"):
         if ".txt" in file and "README" not in file:
             #files.append(os.path.join(root,file))
             files.append(file)
+
 sn_available = list(set(["_".join(f.split("_")[:-1]) for f in files if "README" not in f]))
 print(sn_available)
 print('\n> Enter SN name:   '+sn_available[0])
