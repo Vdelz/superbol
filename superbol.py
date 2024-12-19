@@ -1430,6 +1430,8 @@ plt.clf()
 #fit_params.add('lambda_cutoff', value=bluecut, vary=False)
 #fit_params.add('alpha', value=sup, vary=False)
 
+fluxes = []
+
 # Loop through reference epochs
 for i in range(len(phase)):
     # get date
@@ -1518,6 +1520,13 @@ for i in range(len(phase)):
 
     # Counter shifts down next SED on plot for visibility
     k += 1
+    
+    fluxes.append(flux)
+
+
+fluxes = np.array(fluxes)
+from plot_SN import plot_supernova
+plot_supernova(wlref,cols,filters,fluxes,ref_stack[:,0])
 
 plt.figure(2)
 plt.yticks([])
