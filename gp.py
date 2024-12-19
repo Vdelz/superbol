@@ -105,6 +105,7 @@ def apply_gaussian_process(times, luminosities, new_times, kernels_custom):
     times = np.array(times).reshape(-1, 1)
     luminosities = np.array(luminosities).reshape(-1, 1)
     new_times = np.array(new_times).reshape(-1, 1)
+    t_plot = np.arange(np.min(new_times),np.max(new_times),1).reshape(-1, 1)
     # initialize, trains the regressor and interpolates
     if use_gpy:
         combo_kernel = GPy.kern.src.add.Add(kernels_custom)
@@ -112,6 +113,8 @@ def apply_gaussian_process(times, luminosities, new_times, kernels_custom):
         gpr.optimize(messages=False)
         lc_predictions, lc_pred_var = gpr.predict(new_times)
         lc_pred_err = np.sqrt(lc_pred_var)
+        lc_plot, lc_plot_var = gpr.predict(t_plot)
+        lc_plot_err = np.sqrt(lc_plot_var)
     else: # use scikit learn
         combo_kernel = None
         for ker in kernels_custom:
@@ -119,6 +122,10 @@ def apply_gaussian_process(times, luminosities, new_times, kernels_custom):
         gpr = GaussianProcessRegressor(kernel=combo_kernel, random_state=0)
         gpr.fit(times, luminosities)
         lc_predictions, lc_pred_err = gpr.predict(new_times, return_std=True)
+        lc_plot, lc_plot_err = gpr.predict(t_plot, return_std=True)
+    lc_plot, lc_plot_err = lc_plot.flatten(), lc_plot_err.flatten()
+    plt.fill_between( t_plot.flatten(), lc_plot - lc_plot_err, lc_plot + lc_plot_err,
+        color="k", alpha=0.1, label="GP err", )
     return lc_predictions.flatten(), lc_pred_err.flatten()
 
 
@@ -153,8 +160,6 @@ def gp_interpolate(lc, lc_int, ref_stack, i, cols):
         # plots the fitted band with error bars and variance area
         plt.errorbar( new_times, preds, errs,
             fmt="x", color=cols[i], label=i + " GP fit" )
-        plt.fill_between( new_times, preds - errs, preds + errs,
-            color=cols[i], alpha=0.2, label=i + " GP err", )
         plt.gca().invert_yaxis()
     except Exception as exc:  # pylint: disable=broad-except
         print(f"  Error in Gaussian Process fit: {exc}")
