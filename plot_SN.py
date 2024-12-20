@@ -4,7 +4,7 @@ import numpy as np
   # plot_supernova(wlref,cols,filters,fluxes,ref_stack
 def plot_supernova(wavelenghts,colors,bands,fluxes,times):
     
-    ax = plt.figure(666).add_subplot(projection='3d')
+    ax = plt.figure(4).add_subplot(projection='3d')
     
     for wl,band,flux in zip(wavelenghts,bands,fluxes.T):
         #print(np.array(times).shape,np.array(wl).shape,np.array(flux).shape)
@@ -23,4 +23,3 @@ def plot_supernova(wavelenghts,colors,bands,fluxes,times):
     ax.set_zlabel('Normalized Flux')
     
     ok = plt.show()
-    input("")
