@@ -1540,10 +1540,6 @@ for i in range(len(phase)):
     fluxes.append(flux)
 
 
-fluxes = np.array(fluxes)
-from plot_SN import plot_supernova
-plot_supernova(wlref,cols,filters,fluxes,ref_stack[:,0])
-
 plt.figure(2)
 plt.yticks([])
 plt.xlim(min(wlref)-2000,max(wlref)+3000)
@@ -1629,6 +1625,11 @@ plt.savefig(outdir+'/bb_fits_'+sn+'_'+filters+'.pdf')
 plt.figure(3)
 plt.savefig(outdir+'/results_'+sn+'_'+filters+'.pdf')
 
+
+fluxes = np.array(fluxes)
+from plot_SN import plot_supernova
+plot_supernova(wlref,cols,filters,fluxes,ref_stack[:,0])
+plt.savefig(outdir+'/3Dplot_'+sn+'_'+filters+'.pdf')
 
 # Wait for key press before closing plots!
 fin = input('\n\n> PRESS RETURN TO EXIT...\n')
