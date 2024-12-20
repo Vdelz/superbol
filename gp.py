@@ -11,27 +11,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-use_gpy = False
+gpy_available = False
 try:
     import GPy
-    use_gpy = True
+    gpy_available = True
 except ImportError as err:
     pass
 
 
-def get_kernels(gpy=use_gpy):
+def get_kernels(launch):
     """
     Returns a dictionary of available kernels
     We can make this list as long as we want the rest will update automatically
     """
-    if gpy:
+    if launch.gpy=="y" and gpy_available:
         kernels = {
         "Matern32": GPy.kern.Matern32(input_dim=1),
         "Matern52": GPy.kern.Matern52(input_dim=1),
         "RBF": GPy.kern.RBF(input_dim=1),
         "Exponential": GPy.kern.Exponential(input_dim=1),
         "RationalQuadratic": GPy.kern.RatQuad(input_dim=1),
-        "Periodic": GPy.kern.PeriodicExponential(input_dim=1),
+        "Linear":GPy.kern.Linear(input_dim=1),
         "Bias":GPy.kern.Bias(input_dim=1),
     }
     else: # use scikit learn
@@ -47,12 +47,12 @@ def get_kernels(gpy=use_gpy):
     return kernels
 
 
-def select_kernels():
+def select_kernels(launch):
     """
     This function enables to select the kernels interactively
     """
     print("\n  Choose one or more kernels for Gaussian Process fit")
-    kernels = get_kernels()
+    kernels = get_kernels(launch)
     default_kernel = list(kernels.keys())  # [list(kernels.keys())[0]]
     possible_ids = [str(ker_id + 1) for ker_id in range(len(kernels))]
     # Print all the possibilities
@@ -60,6 +60,9 @@ def select_kernels():
         print("    " + str(ker_id + 1) + ":", k)
     # Parse your choices
     request = "  Enter kernel indices separated by commas (i.e. [2,3]): "
+    choices_str = launch.kernel
+    if choices_str == "all":
+        return default_kernel
     choices_str = input(request).split(",")
     if len(choices_str) == 0:
         return default_kernel
@@ -73,14 +76,16 @@ def select_kernels():
     return kernel_choices
 
 
-def select_params(kernel_choices):
+def select_params(kernel_choices, launch):
     """
     This function enables to tune the kernel parameters for each kernel
     parameters are taken automatically from the available ones for each specific kernel
     """
-    kernels = get_kernels()
+    kernels = get_kernels(launch)
     kernels_custom = []
-    go_with_default = input("  Use Default Kernel parameters? [y] ") or "y"
+    go_with_default = launch.kerpar
+    if go_with_default != "y":
+        go_with_default = input("\n  Use Default Kernel parameters? [y] ") or "y"
     for kernel in [kernels[k] for k in kernel_choices]:
         if go_with_default != "y":
             print("\n  Changing default parameters for kernel", kernel)
@@ -91,7 +96,7 @@ def select_params(kernel_choices):
     return kernels_custom
 
 
-def apply_gaussian_process(times, luminosities, new_times, kernels_custom):
+def apply_gaussian_process(times, luminosities, new_times, kernels_custom, launch):
     """
     Args:
         times (array-like): dates of the in-band observation in MJD.
@@ -105,13 +110,16 @@ def apply_gaussian_process(times, luminosities, new_times, kernels_custom):
     times = np.array(times).reshape(-1, 1)
     luminosities = np.array(luminosities).reshape(-1, 1)
     new_times = np.array(new_times).reshape(-1, 1)
+    t_plot = np.arange(np.min(new_times),np.max(new_times),1).reshape(-1, 1)
     # initialize, trains the regressor and interpolates
-    if use_gpy:
+    if launch.gpy=="y" and gpy_available:
         combo_kernel = GPy.kern.src.add.Add(kernels_custom)
         gpr = GPy.models.GPRegression(times, luminosities, combo_kernel)
         gpr.optimize(messages=False)
         lc_predictions, lc_pred_var = gpr.predict(new_times)
         lc_pred_err = np.sqrt(lc_pred_var)
+        lc_plot, lc_plot_var = gpr.predict(t_plot)
+        lc_plot_err = np.sqrt(lc_plot_var)
     else: # use scikit learn
         combo_kernel = None
         for ker in kernels_custom:
@@ -119,21 +127,25 @@ def apply_gaussian_process(times, luminosities, new_times, kernels_custom):
         gpr = GaussianProcessRegressor(kernel=combo_kernel, random_state=0)
         gpr.fit(times, luminosities)
         lc_predictions, lc_pred_err = gpr.predict(new_times, return_std=True)
+        lc_plot, lc_plot_err = gpr.predict(t_plot, return_std=True)
+    lc_plot, lc_plot_err = lc_plot.flatten(), lc_plot_err.flatten()
+    plt.fill_between( t_plot.flatten(), lc_plot - lc_plot_err, lc_plot + lc_plot_err,
+        color="k", alpha=0.1, label="GP err", )
     return lc_predictions.flatten(), lc_pred_err.flatten()
 
 
-def select_do_gp(times, lc_val, new_times):
+def select_do_gp(times, lc_val, new_times, launch):
     """
     This function is the GP "main function caller".
     Enables to select customize the kernels and run the GP
     """
-    kernel_choices = select_kernels()
-    kernels_custom = select_params(kernel_choices)
-    preds, errs = apply_gaussian_process(times, lc_val, new_times, kernels_custom)
+    kernel_choices = select_kernels(launch)
+    kernels_custom = select_params(kernel_choices,launch)
+    preds, errs = apply_gaussian_process(times, lc_val, new_times, kernels_custom, launch)
     return preds, errs
 
 
-def gp_interpolate(lc, lc_int, ref_stack, i, cols):
+def gp_interpolate(lc, lc_int, ref_stack, i, cols, launch):
     """
     This is a wrapper around the GP process that binds with superbol code
     """
@@ -144,7 +156,7 @@ def gp_interpolate(lc, lc_int, ref_stack, i, cols):
         lc_val = lc[i][valid, 1]
         new_times = ref_stack[:, 0]
         # Core of the Gaussian Process
-        preds, errs = select_do_gp(times, lc_val, new_times)
+        preds, errs = select_do_gp(times, lc_val, new_times, launch)
         # Put values where is needed and plots them
         lc_int[i] = np.column_stack((new_times, preds, errs))
         # Plots all teh other bands
@@ -153,8 +165,6 @@ def gp_interpolate(lc, lc_int, ref_stack, i, cols):
         # plots the fitted band with error bars and variance area
         plt.errorbar( new_times, preds, errs,
             fmt="x", color=cols[i], label=i + " GP fit" )
-        plt.fill_between( new_times, preds - errs, preds + errs,
-            color=cols[i], alpha=0.2, label=i + " GP err", )
         plt.gca().invert_yaxis()
     except Exception as exc:  # pylint: disable=broad-except
         print(f"  Error in Gaussian Process fit: {exc}")
