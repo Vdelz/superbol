@@ -106,6 +106,8 @@ import warnings
 
 from gp import gp_interpolate
 from logo import print_logo
+from auto_launcher import get_params
+launch = get_params()
 #suppress warnings
 warnings.filterwarnings('ignore')
 
@@ -328,8 +330,8 @@ for root, dirs, fs in os.walk("example"):
 
 sn_available = list(set(["_".join(f.split("_")[:-1]) for f in files if "README" not in f]))
 print(sn_available)
-print('\n> Enter SN name:   '+sn_available[0])
-sn = sn_available[0]
+print('\n> Enter SN name:   '+launch.sn)
+sn = launch.sn
 #sn = input('\n> Enter SN name:   ')
 
 
@@ -344,7 +346,7 @@ if not os.path.exists(outdir): os.makedirs(outdir)
 
 
 # Get photometry files
-do1 = "y"
+do1 = launch.findfiles
 print('\n> Find input files automatically?[y]   '+do1)
 #do1 = input('\n> Find input files automatically?[y]   ')
 if not do1: do1='y'
@@ -362,7 +364,7 @@ if do1 == 'y':
         for i in range(len(files)):
             print('  ', i, ':', files[i])
 
-        use = 'n'
+        use = launch.use
         print('\n> Use interpolated LC? (e.g. 0,2 for files 0 and 2, or n for no) [0]')
         print(' (Warning: using multiple interpolation files can cause problems unless times match!)   '+use)
         #use = input('\n> Use interpolated LC? (e.g. 0,2 for files 0 and 2, or n for no) [0]\n (Warning: using multiple interpolation files can cause problems unless times match!)   ')
@@ -520,7 +522,7 @@ plt.tight_layout(pad=0.5)
 plt.draw()
 
 
-limitMJDs = "n"
+limitMJDs = launch.limitMJDs
 print('\n> Limit time range to use? [n]   '+limitMJDs)
 #limitMJDs = input('\n> Limit time range to use? [n]   ')
 if not limitMJDs: limitMJDs = 'n'
@@ -563,7 +565,7 @@ print('\n######### Step 2: reference band for phase info ##########')
 print('\n* Displaying all available photometry...')
 
 # User can choose to include only a subset of filters, e.g. if they see that some don't have very useful data
-t3 = filters
+t3 = launch.bands
 print('\n> Enter bands to use (blue to red) ['+filters+']   '+t3)
 #print([wle[filt] for filt in filters])
 #t3 = input('\n> Enter bands to use (blue to red) ['+filters+']   ')
@@ -592,7 +594,7 @@ for i in filters:
 
 # If using light curves that have not yet been interpolated by a previous superbol run, we need a reference filter
 if useInt!='y':
-    ref = ref3
+    ref = launch.ref
     print('\n> Choose reference band(s) for sampling epochs (Comma delimited)\n   Suggested (most LC points): ['+ref3+']   '+ref)
     #ref = input('\n> Choose reference band(s) for sampling epochs (Comma delimited)\n   Suggested (most LC points): ['+ref3+']   ')
     # Defaults to the band with the most data
@@ -618,7 +620,7 @@ ref_stack = ref_stack[ref_stack[:,0].argsort()]
 
 # User may want to have output in terms of days from maximum, so here we find max light in reference band
 # Two options: fit light curve interactively, or just use brightest point. User specifies what they want to do
-t1 = "n"
+t1 = launch.findmax
 print('\n> Interactively find maximum?[n]   '+t1)
 #t1 = input('\n> Interactively find maximum?[n] ')
 if not t1:
@@ -777,8 +779,8 @@ plt.draw()
 skipK = 'n'
 
 # Input redshift or distance modulus, needed for flux -> luminosity
-z = '10'
-print('\n> Please enter SN redshift or distance modulus:[0]   '+z)
+z = launch.z
+print('\n> Please enter SN redshift or distance modulus:[0]   ',z)
 #z = input('\n> Please enter SN redshift or distance modulus:[0]   ')
 # Default to zero
 if not z: z=0
@@ -791,13 +793,17 @@ if z<10:
     t2 = ''
 
     # Check if user wants to correct time axis for cosmological time dilation
-    if ref_stack[0,0]>25000 or useInt=='y':
+    if ref_stack[0,0]>25000 or launch.use=='y':
         # If time is in MJD or input light curves were already interpolated, default to no
-        t2 = input('\n> Correct for time-dilation?[n] ')
+        t2 = "n"
+        print('\n> Correct for time-dilation?[n] ')
+        #t2 = input('\n> Correct for time-dilation?[n] ')
         if not t2: t2 = 'n'
     else:
         # Otherwise default to yes
-        t2 = input('\n> Correct for time-dilation?[y] ')
+        t2 = "y"
+        print('\n> Correct for time-dilation?[y] ')
+        #t2 = input('\n> Correct for time-dilation?[y] ')
         if not t2: t2 = 'y'
 
     if t2=='y':
@@ -848,11 +854,15 @@ if z<10:
     absol='n'
     if ref_stack[0,1] < 0:
         # If negative mag, must be absolute (but check!)
-        absol = input('> Are magnitudes *absolute* mags? [y] ')
+        absol = "y"
+        print('> Are magnitudes *absolute* mags? [y] ')
+        #absol = input('> Are magnitudes *absolute* mags? [y] ')
         if not absol: absol='y'
     else:
         # If positive mag, must be apparent (but check!)
-        absol = input('> Are magnitudes *absolute* mags? [n] ')
+        absol = "n"
+        print('> Are magnitudes *absolute* mags? [n] ')
+        #absol = input('> Are magnitudes *absolute* mags? [n] ')
         if not absol: absol ='n'
 
     if absol=='y':
@@ -897,7 +907,7 @@ if useInt!='y':
         lc_int[ref_list[0]] = lc[ref_list[0]]
 
     # User decides whether to fit each light curve
-    t4 = "y"
+    t4 = launch.ilc
     print('\n> Interpolate light curves interactively?[y] '+t4)
     #t4 = input('\n> Interpolate light curves interactively?[y] ')
     # Default is yes
@@ -937,19 +947,22 @@ if useInt!='y':
                     plt.tight_layout(pad=0.5)
                     plt.draw()
 
-                    algo = 'g'
+                    algo = launch.algo
                     # Chose the type of algorithm to fit
-                    #print('\n>> Chose type of algorithm to fit:')
-                    algo = input('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    ['+algo+']   ')
+                    print('\n>> Chose type of algorithm to fit:')
+                    if len(algo):
+                        print('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    ['+algo+']   ')
+                    else:
+                        algo = input('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    ['+algo+']   ')
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if algo == 'q':
                         break
                     if algo == 'g':
-                        gp_interpolate(lc, lc_int, ref_stack, i, cols)
+                        gp_interpolate(lc, lc_int, ref_stack, i, cols, launch)
                     if algo == 'p':
                         
                         # Default polynomial order to fit light curves
-                        order1 = 4
+                        order1 = launch.order
                         # Choose order of polynomial fit to use
                         order = order1
                         print('\n>> Order of polynomial to fit?   ['+str(order1)+']   '+order)
@@ -979,9 +992,12 @@ if useInt!='y':
                     plt.draw()
 
                     # Check if happy with fit
-                    happy = 'y'
+                    happy = launch.happy
                     #print('\n> Happy with fit?(y/[n])   '+happy)
-                    happy = input('\n> Happy with fit?(y/[n])   ')
+                    if len(happy):
+                        print('\n> Happy with fit?(y/[n])   ',happy)
+                    else:
+                        happy = input('\n> Happy with fit?(y/[n])   ')
                     # Default to no
                     if not happy: happy = 'n'
 
@@ -1078,7 +1094,7 @@ if useInt!='y':
 
                     if len(tmp[tmp[:,0]<low])>0:
                         # If there are early extrapolated points, ask user whether they prefer polynomial, constant colour, or want to hedge their bets
-                        extraptype = 'p'
+                        extraptype = launch.ete
                         print('\n> Early-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?   '+extraptype)
                         #extraptype = input('\n> Early-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?\n')
                         # Default to polynomial
@@ -1097,8 +1113,8 @@ if useInt!='y':
 
                     # Now do same for late times
                     if len(tmp[tmp[:,0]>up])>0:
-                        extraptype = 'c'
-                        extraptype = input('\n> Late-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?    '+extraptype)
+                        extraptype = launch.lte
+                        print('\n> Late-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?    '+extraptype)
                         #extraptype = input('\n> Late-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?\n')
                         if not extraptype: extraptype = 'p'
                         if extraptype == 'c':
@@ -1177,7 +1193,7 @@ else:
 print('\n######### Step 5: Extinction and K-corrections #########')
 
 # Extinction correction
-ebv = '0'
+ebv = launch.ebv
 print('\n> Please enter Galactic E(B-V): \n'+'  (0 if data are already extinction-corrected) [0]   ',ebv)
 #ebv = input('\n> Please enter Galactic E(B-V): \n'
 #                        '  (0 if data are already extinction-corrected) [0]   ')
@@ -1207,7 +1223,7 @@ for i in lc_int:
 print('\nDefault photometric systems:')
 print(default_sys)
 
-is_correct_system = 'y'
+is_correct_system = launch.defsys
 print('\n> Are all bands in their default systems? ([y]/n)  ',is_correct_system)
 #is_correct_system = input('\n> Are all bands in their default systems? ([y]/n)  ')
 if not is_correct_system: is_correct_system = 'y'
@@ -1314,7 +1330,7 @@ Lbb_opt_err_arr = []
 bluecut = 1
 sup = 0
 
-do_absorb = 'n'
+do_absorb = launch.luv
 print('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ',do_absorb)
 #do_absorb = input('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ')
 if not do_absorb: do_absorb = 'n'
@@ -1331,18 +1347,18 @@ if do_absorb in ('y','yes'):
 # NOTE: at some point should give option to make these free parameters...
 
 
-T_init = '10000'
-print('\n> Initial guess for starting temperature [10000 K]?   ',T_init)
-#T_init = input('\n> Initial guess for starting temperature [10000 K]?   ')
+T_init = launch.t0
+print('\n> Initial guess for starting temperature ['+str(T_init)+' K]?   ',T_init)
+#T_init = input('\n> Initial guess for starting temperature ['+str(T_init)+' K]?   ')
 if not T_init: T_init = 10000
 T_init = float(T_init)
 
 T_init /= 1000
 
 
-R_init = '1.0e15'
-print('\n> Initial guess for starting radius [1.0e15 cm]?   ',R_init)
-#R_init = input('\n> Initial guess for starting radius [1.0e15 cm]?   ')
+R_init = launch.r0
+print('\n> Initial guess for starting radius ['+str(R_init)+' cm]?   ',R_init)
+#R_init = input('\n> Initial guess for starting radius ['+str(R_init)+' cm]?   ')
 if not R_init: R_init = 1.0e15
 R_init = float(R_init)
 
