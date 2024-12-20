@@ -1,8 +1,8 @@
 import argparse
 
 def get_params():
-    parser = argparse.ArgumentParser(description="Parse parameters for the main program")
-    parser.add_argument("-sn", "--sn", type=str, help="Name of the Supernova")
+    parser = argparse.ArgumentParser(description="example usage: superbol.py -sn SN1987A")
+    parser.add_argument("-sn", "--sn", type=str, help="Name of the Supernova REQUIRED", required=True)
     parser.add_argument("-ff", "--findfiles", type=str, default="y", help="Find input files automatically")
     parser.add_argument("-u", "--use", type=str, default="n", help="Use interpolated LC")
     parser.add_argument("-l", "--limitMJDs", type=str, default="n", help="Limit time range to use")

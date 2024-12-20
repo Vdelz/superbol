@@ -84,9 +84,8 @@ def select_params(kernel_choices, launch):
     kernels = get_kernels(launch)
     kernels_custom = []
     go_with_default = launch.kerpar
-    if go_with_default == "y":
-        return kernels_custom
-    go_with_default = input("\n  Use Default Kernel parameters? [y] ") or "y"
+    if go_with_default != "y":
+        go_with_default = input("\n  Use Default Kernel parameters? [y] ") or "y"
     for kernel in [kernels[k] for k in kernel_choices]:
         if go_with_default != "y":
             print("\n  Changing default parameters for kernel", kernel)
