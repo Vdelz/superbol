@@ -9,7 +9,7 @@ def get_params():
     parser.add_argument("-b", "--bands", type=str, default="", help="Enter bands to use (blue to red)")
     parser.add_argument("-ref", "--ref", type=str, default="", help="Choose reference band(s) for sampling epochs")
     parser.add_argument("-fm", "--findmax", type=str, default="n", help="Interactively find maximum")
-    parser.add_argument("-z", "--z", type=float, default=10, help="enter SN redshift or distance modulus") # from file
+    parser.add_argument("-z", "--z", type=float, default=None, help="enter SN redshift or distance modulus") # from file
     parser.add_argument("-i", "--ilc", type=str, default="y", help="Interpolate light curves interactively")
     parser.add_argument("-a", "--algo", type=str, default="ask", help="Chose type of algorithm to fit")
     parser.add_argument("-gpy", "--gpy", type=str, default="y", help="y: Use GPy or n: Use Sklearn")
@@ -19,7 +19,7 @@ def get_params():
     parser.add_argument("-ord", "--order", type=int, default=4, help="Order of polynomial to fit")
     parser.add_argument("-ete", "--ete", type=str, default="p", help="Early-time extrapolation")
     parser.add_argument("-lte", "--lte", type=str, default="c", help="Late-time extrapolation")
-    parser.add_argument("-ebv", "--ebv", type=float, default=0, help="Extinction correction") # from file
+    parser.add_argument("-ebv", "--ebv", type=float, default=None, help="Extinction correction") # from file
     parser.add_argument("-ds", "--defsys", type=str, default="y", help="Are all bands in their default systems")
     parser.add_argument("-luv", "--luv", type=str, default="c", help="Apply blackbody absorption L_uv(lam)")
     parser.add_argument("-t0", "--t0", type=float, default=10000, help="Initial guess for temperature in K")
