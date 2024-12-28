@@ -106,7 +106,7 @@ import warnings
 
 from gp import gp_interpolate
 from logo import print_logo
-from auto_launcher import get_params
+from auto_launcher import get_params, input_param
 launch = get_params()
 #suppress warnings
 warnings.filterwarnings('ignore')
@@ -320,7 +320,6 @@ print('\n######### Step 1: input files and filters ##########')
 # keep tabs on whether interpolated LCs exist
 useInt = 'n'
 
-# SN name defines names of input and output files
 files = []
 for root, dirs, fs in os.walk("example"):
     for file in fs:
@@ -330,9 +329,9 @@ for root, dirs, fs in os.walk("example"):
 
 sn_available = list(set(["_".join(f.split("_")[:-1]) for f in files if "README" not in f]))
 print(sn_available)
-print('\n> Enter SN name:   '+launch.sn)
-sn = launch.sn
-#sn = input('\n> Enter SN name:   ')
+
+# SN name defines names of input and output files
+sn = input_param('\n> Enter SN name:   ',launch.sn)
 
 
 if not sn:
@@ -346,9 +345,7 @@ if not os.path.exists(outdir): os.makedirs(outdir)
 
 
 # Get photometry files
-do1 = launch.findfiles
-print('\n> Find input files automatically?[y]   '+do1)
-#do1 = input('\n> Find input files automatically?[y]   ')
+do1 = input_param('\n> Find input files automatically?[y]   ',launch.findfiles)
 if not do1: do1='y'
 # User will almost always want to do this automatically, if files follow naming convention!
 
@@ -364,10 +361,7 @@ if do1 == 'y':
         for i in range(len(files)):
             print('  ', i, ':', files[i])
 
-        use = launch.use
-        print('\n> Use interpolated LC? (e.g. 0,2 for files 0 and 2, or n for no) [0]')
-        print(' (Warning: using multiple interpolation files can cause problems unless times match!)   '+use)
-        #use = input('\n> Use interpolated LC? (e.g. 0,2 for files 0 and 2, or n for no) [0]\n (Warning: using multiple interpolation files can cause problems unless times match!)   ')
+        use = input_param('\n> Use interpolated LC? (e.g. 0,2 for files 0 and 2, or n for no) [0]\n (Warning: using multiple interpolation files can cause problems unless times match!)   ',launch.use)
         # Default is to read in the first interpolation file
         # Multiple interpolations can be read using commas, BUT if time axes don't match then the phases can end up incorrectly defined for some bands!!!
         if not use: use1.append(0)
@@ -393,10 +387,8 @@ if do1 == 'y':
             for i in range(len(files)):
                 print('  ', i, ':', files[i])
 
-            use = ""
-            print('\n> Specify files to use (e.g. 0,2 for files 0 and 2) [all]   ')
-            # use = input('\n> Specify files to use (e.g. 0,2 for files 0 and 2) [all]   ')
-            if len(use)>0:
+            use = input_param('\n> Specify files to use (e.g. 0,2 for files 0 and 2) [all]   ')
+            if len(use)>0 and use != "all":
                 # Include only specified files
                 for i in use.split(','):
                     use1.append(i)
@@ -413,7 +405,7 @@ if do1 == 'y':
 
 if do1 != 'y':
     # If we did not find any input data, you can specify files manually - BUT should still follow filter conventions and end in _<filters>.EXT
-    files1 = input('\n> Enter all file names separated by commas:\n')
+    files1 = input_param('\n> Enter all file names separated by commas:\n')
     if not files1:
         # But if no files specified by this point, we give up prompting!
         print('No files given - exiting!')
@@ -522,18 +514,16 @@ plt.tight_layout(pad=0.5)
 plt.draw()
 
 
-limitMJDs = launch.limitMJDs
-print('\n> Limit time range to use? [n]   '+limitMJDs)
-#limitMJDs = input('\n> Limit time range to use? [n]   ')
+limitMJDs = input_param('\n> Limit time range to use? [n]   ',launch.limitMJDs)
 if not limitMJDs: limitMJDs = 'n'
 
 if limitMJDs == 'y':
     
-    MJDmin = input('Min time to use [0] ')
+    MJDmin = input_param('Min time to use [0] ')
     if not MJDmin: MJDmin = 0
     MJDmin = float(MJDmin)
     
-    MJDmax = input('Max time to use [1000000] ')
+    MJDmax = input_param('Max time to use [1000000] ')
     if not MJDmax: MJDmax = 1000000
     MJDmax = float(MJDmax)
     
@@ -565,10 +555,7 @@ print('\n######### Step 2: reference band for phase info ##########')
 print('\n* Displaying all available photometry...')
 
 # User can choose to include only a subset of filters, e.g. if they see that some don't have very useful data
-t3 = launch.bands
-print('\n> Enter bands to use (blue to red) ['+filters+']   '+t3)
-#print([wle[filt] for filt in filters])
-#t3 = input('\n> Enter bands to use (blue to red) ['+filters+']   ')
+t3 = input_param('\n> Enter bands to use (blue to red) ['+filters+']   ',launch.bands)
 if not t3: t3 = filters
 
 filters = ''
@@ -594,9 +581,7 @@ for i in filters:
 
 # If using light curves that have not yet been interpolated by a previous superbol run, we need a reference filter
 if useInt!='y':
-    ref = launch.ref
-    print('\n> Choose reference band(s) for sampling epochs (Comma delimited)\n   Suggested (most LC points): ['+ref3+']   '+ref)
-    #ref = input('\n> Choose reference band(s) for sampling epochs (Comma delimited)\n   Suggested (most LC points): ['+ref3+']   ')
+    ref = input_param('\n> Choose reference band(s) for sampling epochs (Comma delimited)\n   Suggested (most LC points): ['+ref3+']   ',launch.ref)
     # Defaults to the band with the most data
     if not ref: ref = ref3
     ref_list = ref.split(',')
@@ -620,15 +605,13 @@ ref_stack = ref_stack[ref_stack[:,0].argsort()]
 
 # User may want to have output in terms of days from maximum, so here we find max light in reference band
 # Two options: fit light curve interactively, or just use brightest point. User specifies what they want to do
-t1 = launch.findmax
-print('\n> Interactively find maximum?[n]   '+t1)
-#t1 = input('\n> Interactively find maximum?[n] ')
+t1 = input_param('\n> Interactively find maximum?[n]   ',launch.findmax)
 if not t1:
     # Default to not doing interactive fit
     t1 = 'n'
 
     # in this case check if user wants quick approximation
-    doSh = input('\n> Shift to approx maximum?[n] ')
+    doSh = input_param('\n> Shift to approx maximum?[n] ')
     # Default to not doing this either - i.e. leave light curve as it is
     if not doSh: doSh = 'n'
 
@@ -681,7 +664,7 @@ if t1!='n':
         print('\n### Select data range ###')
 
         # Interactively set upper limit on times to fit
-        Xup = input('>> Cut-off phase for polynomial fit?['+str(Xup1)+']   ')
+        Xup = input_param('>> Cut-off phase for polynomial fit?['+str(Xup1)+']   ')
         if not Xup: Xup = Xup1
         Xup = float(Xup)
         Xup1 = Xup
@@ -698,10 +681,10 @@ if t1!='n':
         plt.draw()
 
         # Interactively set polynomial order
-        order = input('\n>> Order of polynomial to fit?['+str(order1)+']   ')
+        order = input_param('\n>> Order of polynomial to fit?['+str(order1)+']   ')
         if not order: order = order1
         order = int(order)
-        order1 = order
+
 
         # Fit light curve with polynomial
         fit = np.polyfit(d1[:,0],d1[:,1],deg=order)
@@ -722,12 +705,12 @@ if t1!='n':
         plt.draw()
 
         # Check if user likes fit
-        happy = input('\n> Happy with fit?(y/[n])   ')
+        happy = input_param('\n> Happy with fit?(y/[n])   ')
         # Default is to try again!
         if not happy: happy = 'n'
 
     # After user tired/satisfied with fit, check if they want to use the peak of their most recent polynomial as t=0, or default to the brightest point
-    new_peak = input('> Use [p-olynomial] or o-bserved peak date?    ')
+    new_peak = input_param('> Use [p-olynomial] or o-bserved peak date?    ')
     # Default is to use polynomial for peak date
     if not new_peak: new_peak = 'p'
 
@@ -779,9 +762,7 @@ plt.draw()
 skipK = 'n'
 
 # Input redshift or distance modulus, needed for flux -> luminosity
-z = launch.z
-print('\n> Please enter SN redshift or distance modulus:[0]   ',z)
-#z = input('\n> Please enter SN redshift or distance modulus:[0]   ')
+z = input_param('\n> Please enter SN redshift or distance modulus:[0]   ',launch.z)
 # Default to zero
 if not z: z=0
 z = float(z)
@@ -793,17 +774,13 @@ if z<10:
     t2 = ''
 
     # Check if user wants to correct time axis for cosmological time dilation
-    if ref_stack[0,0]>25000 or launch.use=='y':
+    if ref_stack[0,0]>25000 or useInt=='y':
         # If time is in MJD or input light curves were already interpolated, default to no
-        t2 = "n"
-        print('\n> Correct for time-dilation?[n] ')
-        #t2 = input('\n> Correct for time-dilation?[n] ')
+        t2 = input_param('\n> Correct for time-dilation?[n] ')
         if not t2: t2 = 'n'
     else:
         # Otherwise default to yes
-        t2 = "y"
-        print('\n> Correct for time-dilation?[y] ')
-        #t2 = input('\n> Correct for time-dilation?[y] ')
+        t2 = input_param('\n> Correct for time-dilation?[y] ')
         if not t2: t2 = 'y'
 
     if t2=='y':
@@ -854,15 +831,11 @@ if z<10:
     absol='n'
     if ref_stack[0,1] < 0:
         # If negative mag, must be absolute (but check!)
-        absol = "y"
-        print('> Are magnitudes *absolute* mags? [y] ')
-        #absol = input('> Are magnitudes *absolute* mags? [y] ')
+        absol = input_param('> Are magnitudes *absolute* mags? [y] ')
         if not absol: absol='y'
     else:
         # If positive mag, must be apparent (but check!)
-        absol = "n"
-        print('> Are magnitudes *absolute* mags? [n] ')
-        #absol = input('> Are magnitudes *absolute* mags? [n] ')
+        absol = input_param('> Are magnitudes *absolute* mags? [n] ')
         if not absol: absol ='n'
 
     if absol=='y':
@@ -907,9 +880,7 @@ if useInt!='y':
         lc_int[ref_list[0]] = lc[ref_list[0]]
 
     # User decides whether to fit each light curve
-    t4 = launch.ilc
-    print('\n> Interpolate light curves interactively?[y] '+t4)
-    #t4 = input('\n> Interpolate light curves interactively?[y] ')
+    t4 = input_param('\n> Interpolate light curves interactively?[y] ',launch.ilc)
     # Default is yes
     if not t4: t4 = 'y'
 
@@ -947,13 +918,9 @@ if useInt!='y':
                     plt.tight_layout(pad=0.5)
                     plt.draw()
 
-                    algo = launch.algo
                     # Chose the type of algorithm to fit
                     print('\n>> Chose type of algorithm to fit:')
-                    if len(algo):
-                        print('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    ['+algo+']   ')
-                    else:
-                        algo = input('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    ['+algo+']   ')
+                    algo = input_param('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    [q]   ',launch.algo)
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if algo == 'q':
                         break
@@ -962,17 +929,13 @@ if useInt!='y':
                     if algo == 'p':
                         
                         # Default polynomial order to fit light curves
-                        order1 = launch.order
+                        order1 = 4
                         # Choose order of polynomial fit to use
-                        order = order1
-                        print('\n>> Order of polynomial to fit?   ['+str(order1)+']   '+order)
-                        #order = input('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   ')
+                        order = input_param('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   ',launch.order)
                         # Or use default order
                         if not order: order = order1
 
                         order = int(order)
-                        # Set new default to current order
-                        order1 = order
 
                         # Fit light curve with polynomial
                         fit = np.polyfit(lc[i][:,0],lc[i][:,1],deg=order)
@@ -992,12 +955,7 @@ if useInt!='y':
                     plt.draw()
 
                     # Check if happy with fit
-                    happy = launch.happy
-                    #print('\n> Happy with fit?(y/[n])   '+happy)
-                    if len(happy):
-                        print('\n> Happy with fit?(y/[n])   ',happy)
-                    else:
-                        happy = input('\n> Happy with fit?(y/[n])   ')
+                    happy = input_param('\n> Happy with fit?(y/[n])   ',launch.happy)
                     # Default to no
                     if not happy: happy = 'n'
 
@@ -1094,9 +1052,7 @@ if useInt!='y':
 
                     if len(tmp[tmp[:,0]<low])>0:
                         # If there are early extrapolated points, ask user whether they prefer polynomial, constant colour, or want to hedge their bets
-                        extraptype = launch.ete
-                        print('\n> Early-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?   '+extraptype)
-                        #extraptype = input('\n> Early-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?\n')
+                        extraptype = input_param('\n> Early-time extrapolation:\n  [p]-olynomial, c-onstant colour, or a-verage of two methods?\n',launch.ete)
                         # Default to polynomial
                         if not extraptype: extraptype = 'p'
                         if extraptype == 'c':
@@ -1113,9 +1069,7 @@ if useInt!='y':
 
                     # Now do same for late times
                     if len(tmp[tmp[:,0]>up])>0:
-                        extraptype = launch.lte
-                        print('\n> Late-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?    '+extraptype)
-                        #extraptype = input('\n> Late-time extrapolation:\n  [P-olynomial], c-onstant colour, or a-verage of two methods?\n')
+                        extraptype = input_param('\n> Late-time extrapolation:\n  [p]-olynomial, c-onstant colour, or a-verage of two methods?\n',launch.lte)
                         if not extraptype: extraptype = 'p'
                         if extraptype == 'c':
                             tmp[:,1][tmp[:,0]>up]=late
@@ -1193,10 +1147,8 @@ else:
 print('\n######### Step 5: Extinction and K-corrections #########')
 
 # Extinction correction
-ebv = launch.ebv
-print('\n> Please enter Galactic E(B-V): \n'+'  (0 if data are already extinction-corrected) [0]   ',ebv)
-#ebv = input('\n> Please enter Galactic E(B-V): \n'
-#                        '  (0 if data are already extinction-corrected) [0]   ')
+ebv = input_param('\n> Please enter Galactic E(B-V): \n  (0 if data are already extinction-corrected) [0]   ',launch.ebv)
+
 if not ebv: ebv=0
 ebv = float(ebv)
 
@@ -1206,8 +1158,7 @@ for i in lc_int:
 
 ## If UVOT bands are in AB, need to convert to Vega
 #if 'S' in lc_int or 'D' in lc_int or 'A' in lc_int:
-#    shiftSwift = input('\n> UVOT bands detected. These must be in Vega mags.\n'
-#                            '  Apply AB->Vega correction for these bands? [n]   ')
+#    shiftSwift = input_param('\n> UVOT bands detected. These must be in Vega mags.\n  Apply AB->Vega correction for these bands? [n]   ')
 #    if not shiftSwift: shiftSwift = 'n'
 #
 #    if shiftSwift == 'y':
@@ -1223,16 +1174,15 @@ for i in lc_int:
 print('\nDefault photometric systems:')
 print(default_sys)
 
-is_correct_system = launch.defsys
-print('\n> Are all bands in their default systems? ([y]/n)  ',is_correct_system)
-#is_correct_system = input('\n> Are all bands in their default systems? ([y]/n)  ')
+is_correct_system = input_param('\n> Are all bands in their default systems? ([y]/n)  ',launch.defsys)
+
 if not is_correct_system: is_correct_system = 'y'
 
 systems = {}
 if is_correct_system == 'n':
     for i in filters:
         # This loop should ask for each band if it is in A-B or V-ega, and add to a dictionary
-        sys1 = input('Is '+i+'-band data in [A]-B or V-ega? ')
+        sys1 = input_param('Is '+i+'-band data in [A]-B or V-ega? ')
         if not sys1: sys1 = 'AB'
         systems[i] = sys1
 else:
@@ -1244,7 +1194,7 @@ doKcorr = 'n'
 # i.e. if we have a redshift:
 if skipK == 'n':
     # converting to rest-frame means wavelength /= 1+z and flux *= 1+z. But if input magnitudes were K-corrected, this has already been done implicitly!
-    doKcorr = input('\n> Do you want to covert flux and wavelength to rest-frame?\n'
+    doKcorr = input_param('\n> Do you want to covert flux and wavelength to rest-frame?\n'
                             '  (skip this step if data are already K-corrected) [y]   ')
     if not doKcorr: doKcorr = 'y'
 
@@ -1330,35 +1280,29 @@ Lbb_opt_err_arr = []
 bluecut = 1
 sup = 0
 
-do_absorb = launch.luv
-print('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ',do_absorb)
-#do_absorb = input('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ')
+do_absorb = input_param('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ')
 if not do_absorb: do_absorb = 'n'
 
 if do_absorb in ('y','yes'):
-    bluecut = input('\n> Absorb below which wavelength? [3000A]   ')
+    bluecut = input_param('\n> Absorb below which wavelength? [3000]A  ')
     if not bluecut: bluecut = 3000
     bluecut = float(bluecut)
     
-    sup = input('\n> Suppression index for BB flux bluewards of '+str(bluecut)+'A? [1]   ')
+    sup = input_param('\n> Suppression index for BB flux bluewards of '+str(bluecut)+'A? [1]   ')
     if not sup: sup = 1
     sup = float(sup)
 
 # NOTE: at some point should give option to make these free parameters...
 
 
-T_init = launch.t0
-print('\n> Initial guess for starting temperature ['+str(T_init)+' K]?   ',T_init)
-#T_init = input('\n> Initial guess for starting temperature ['+str(T_init)+' K]?   ')
+T_init = input_param('\n> Initial guess for starting temperature [10000]K?   ',launch.t0)
 if not T_init: T_init = 10000
 T_init = float(T_init)
 
 T_init /= 1000
 
 
-R_init = launch.r0
-print('\n> Initial guess for starting radius ['+str(R_init)+' cm]?   ',R_init)
-#R_init = input('\n> Initial guess for starting radius ['+str(R_init)+' cm]?   ')
+R_init = input_param('\n> Initial guess for starting radius [1.0e15]cm?   ',launch.r0)
 if not R_init: R_init = 1.0e15
 R_init = float(R_init)
 
@@ -1631,4 +1575,4 @@ plot_supernova(wlref,cols,filters,fluxes,ref_stack[:,0])
 plt.savefig(outdir+'/3Dplot_'+sn+'_'+filters+'.pdf')
 
 # Wait for key press before closing plots!
-fin = input('\n\n> PRESS RETURN TO EXIT...\n')
+fin = input_param('\n\n> PRESS RETURN TO EXIT...\n')
