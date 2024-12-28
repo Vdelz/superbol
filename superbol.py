@@ -380,6 +380,7 @@ if do1 == 'y':
         # And here is if we don't have (or want) previously interpolated data
         # search for any files matching with SN name
         files = glob.glob("**/"+sn+'_*', recursive=True)
+        files = [f for f in files if "." in f]
 
         if len(files)>0:
             # If files are found, print them and let the user choose which ones to read in
