@@ -11,11 +11,11 @@ def get_params():
     parser.add_argument("-fm", "--findmax", type=str, default="n", help="Interactively find maximum")
     parser.add_argument("-z", "--z", type=float, default=10, help="enter SN redshift or distance modulus") # from file
     parser.add_argument("-i", "--ilc", type=str, default="y", help="Interpolate light curves interactively")
-    parser.add_argument("-a", "--algo", type=str, default="", help="Chose type of algorithm to fit")
+    parser.add_argument("-a", "--algo", type=str, default="ask", help="Chose type of algorithm to fit")
     parser.add_argument("-gpy", "--gpy", type=str, default="y", help="y: Use GPy or n: Use Sklearn")
     parser.add_argument("-k", "--kernel", type=str, default="all", help="Chose kernels")
     parser.add_argument("-kp", "--kerpar", type=str, default="y", help="Go with default Kernel Params")
-    parser.add_argument("-happy", "--happy", type=str, default="", help="Chose if you are happy with fit by default")
+    parser.add_argument("-happy", "--happy", type=str, default="ask", help="Chose if you are happy with fit by default")
     parser.add_argument("-ord", "--order", type=int, default=4, help="Order of polynomial to fit")
     parser.add_argument("-ete", "--ete", type=str, default="p", help="Early-time extrapolation")
     parser.add_argument("-lte", "--lte", type=str, default="c", help="Late-time extrapolation")
@@ -26,3 +26,16 @@ def get_params():
     parser.add_argument("-r0", "--r0", type=float, default=1.0e15, help="Initial guess for starting radius in cm")
 
     return parser.parse_args()
+
+
+def input_param(query,param="default"):
+    if param == "default":
+        if "]" not in query or "[" not in query:
+            param = "ask"
+        else:
+            param = query.split("[")[-1].split("]")[0]
+    if param == "ask":
+        return input(query)
+    else:
+        print(query,param)
+        return param
