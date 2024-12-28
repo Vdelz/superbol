@@ -106,6 +106,7 @@ import warnings
 
 from gp import gp_interpolate
 from logo import print_logo
+from get_info import get_z_red, get_E_BV
 from auto_launcher import get_params, input_param
 launch = get_params()
 #suppress warnings
@@ -764,7 +765,7 @@ skipK = 'n'
 # Input redshift or distance modulus, needed for flux -> luminosity
 z = input_param('\n> Please enter SN redshift or distance modulus:[0]   ',launch.z)
 # Default to zero
-if not z: z=0
+if not z: z = get_z_red(sn)
 z = float(z)
 
 if z<10:
@@ -1149,7 +1150,7 @@ print('\n######### Step 5: Extinction and K-corrections #########')
 # Extinction correction
 ebv = input_param('\n> Please enter Galactic E(B-V): \n  (0 if data are already extinction-corrected) [0]   ',launch.ebv)
 
-if not ebv: ebv=0
+if not ebv: ebv = get_E_BV(sn)
 ebv = float(ebv)
 
 for i in lc_int:
