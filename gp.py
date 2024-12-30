@@ -134,6 +134,42 @@ def apply_gaussian_process(times, luminosities, new_times, kernels_custom, launc
     return lc_predictions.flatten(), lc_pred_err.flatten()
 
 
+def estimate_error_GP(times, lc_val, kernels_custom, launch)
+    # reshapes the inputs just in case
+    times = np.array(times).reshape(-1)
+    lc_val = np.array(lc_val).reshape(-1)
+    
+    twofold_cross_valid_err = 0
+    mean_estimated_err = 0
+    max_twofold_err = 0
+    max_estimated_err = 0
+    argmax_est = np.nan
+    argmax_eff = np.nan
+    
+    for block in range(2):
+        t_train,t_val = times[block::2],times[1-block::2]
+        l_train,l_val_true = lc_val[block::2],lc_val[1-block::2]
+        l_val_pred, est_errs = apply_gaussian_process(t_train, l_train, t_val, kernels_custom, launch)
+        effective_errs = np.sqrt((l_val_pred-l_val_true)**2)
+        
+        twofold_cross_valid_err += np.sum(effective_errs)
+        mean_estimated_err += np.sum(est_errs)
+        max_twofold_err = max(max_twofold_err,np.max(effective_errs))
+        max_estimated_err = max(max_estimated_err,np.max(est_errs))
+        if max_twofold_err == np.max(effective_errs):
+            argmax_eff = t_val[np.argmax(effective_errs)]
+        if max_estimated_err == np.max(est_errs):
+            argmax_est = t_val[np.argmax(est_errs)]
+        
+    twofold_cross_valid_err = twofold_cross_valid_err/len(times)
+    mean_estimated_err = mean_estimated_err/len(times)
+    print("\n  Interpolation error estimates performing half decimation")
+    print("    Mean 2fold_cross_valid_error = ",twofold_cross_valid_err,"magnitudes")
+    print("    Max  2fold_cross_valid_error = ",max_twofold_err,"magnitudes","at",argmax_eff)
+    print("    Mean gp estimated_error      = ",mean_estimated_err,"magnitudes")
+    print("    Max  gp estimated_error      = ",max_estimated_err,"magnitudes","at",argmax_est)
+
+
 def select_do_gp(times, lc_val, new_times, launch):
     """
     This function is the GP "main function caller".
@@ -142,6 +178,7 @@ def select_do_gp(times, lc_val, new_times, launch):
     kernel_choices = select_kernels(launch)
     kernels_custom = select_params(kernel_choices,launch)
     preds, errs = apply_gaussian_process(times, lc_val, new_times, kernels_custom, launch)
+    estimate_error_GP(times, lc_val, kernels_custom, launch)
     return preds, errs
 
 
