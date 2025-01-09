@@ -10,7 +10,7 @@ def get_params():
     parser.add_argument("-ref", "--ref", type=str, default="", help="Choose reference band(s) for sampling epochs")
     parser.add_argument("-fm", "--findmax", type=str, default="n", help="Interactively find maximum")
     parser.add_argument("-z", "--z", type=float, default=None, help="enter SN redshift or distance modulus") # from file
-    parser.add_argument("-i", "--ilc", type=str, default="y", help="Interpolate light curves interactively")
+    parser.add_argument("-i", "--ilc", type=str, default="ask", help="Interpolate light curves interactively")
     parser.add_argument("-a", "--algo", type=str, default="ask", help="Chose type of algorithm to fit")
     parser.add_argument("-gpy", "--gpy", type=str, default="y", help="y: Use GPy or n: Use Sklearn")
     parser.add_argument("-k", "--kernel", type=str, default="all", help="Chose kernels")
