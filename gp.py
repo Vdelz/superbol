@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-gpy_available = False
+gpy_available = True
 try:
     import GPy
     gpy_available = True
