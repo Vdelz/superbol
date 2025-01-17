@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-gpy_available = True
-try:
-    import GPy
-    gpy_available = True
-except ImportError as err:
-    pass
+gpy_available = False
+#try:
+#    import GPy
+#    gpy_available = True
+#except ImportError as err:
+#    pass
 
 
 def get_kernels(launch):
