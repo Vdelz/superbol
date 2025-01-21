@@ -328,8 +328,18 @@ for root, dirs, fs in os.walk("example"):
             #files.append(os.path.join(root,file))
             files.append(file)
 
-sn_available = list(set(["_".join(f.split("_")[:-1]) for f in files if "README" not in f]))
-print(sn_available)
+print("\n  List of available SuperNovae")
+sn_available = sorted(list(set(["_".join(f.split("_")[:-1]) for f in files if "read" not in f.lower()])))
+longest_name = max([len(sn) for sn in sn_available])+3
+max_line_size , max_col_size = os.get_terminal_size()
+line_size = max_line_size
+for sn_av in sn_available:
+    if line_size >= max_line_size:
+        print("\n    ",end="")
+        line_size = longest_name
+    print(sn_av.ljust(longest_name," "),end="");
+    line_size += longest_name
+print("\n\n  If the Supernova is not in the list make sure the files are inside the example folder")
 
 # SN name defines names of input and output files
 sn = input_param('\n> Enter SN name:   ',launch.sn)
