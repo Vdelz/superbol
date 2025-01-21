@@ -784,7 +784,7 @@ z = float(z)
 
 if z<10:
     # Redshift always less than 10, distance modulus always greater, so easy to distinguish
-    print('Redshift entered (or DM=0)')
+    print('  Redshift entered (or DM=0)')
 
     t2 = ''
 
@@ -842,7 +842,7 @@ if z<10:
     #############################################
 
     # Check value of first light curve point to see if likely absolute or apparent mag
-    print('\n* First ref band mag = %.2f' %ref_stack[0,1])
+    print('\n* First ref band mag = %.2f\n' %ref_stack[0,1])
     absol='n'
     if ref_stack[0,1] < 0:
         # If negative mag, must be absolute (but check!)
@@ -934,7 +934,7 @@ if useInt!='y':
                     plt.draw()
 
                     # Chose the type of algorithm to fit
-                    print('\n>> Chose type of algorithm to fit:')
+                    print('\n> Choose type of algorithm to fit:')
                     algo = input_param('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    [q]   ',launch.algo)
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if algo == 'q':
@@ -1301,7 +1301,7 @@ Lbb_opt_err_arr = []
 bluecut = 1
 sup = 0
 
-do_absorb = input_param('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ')
+do_absorb = input_param('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n  can give better fit in UV. Apply absorption? [n]   ')
 if not do_absorb: do_absorb = 'n'
 
 if do_absorb in ('y','yes'):
