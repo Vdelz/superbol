@@ -1186,8 +1186,14 @@ for i in lc_int:
 #        print('\n* Converting UV bands to Vega')
 
 
-print('\nDefault photometric systems:')
-print(default_sys)
+print('\n  Default photometric systems:')
+for photometric_sys in set([v for k,v in default_sys.items()]):
+    print("    "+photometric_sys,end=" :  ")
+    for k,v in default_sys.items():
+        if v == photometric_sys:
+            print(k,end=" ")
+    print()
+
 
 is_correct_system = input_param('\n> Are all bands in their default systems? ([y]/n)  ',launch.defsys)
 
