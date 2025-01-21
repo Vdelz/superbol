@@ -913,8 +913,8 @@ if useInt!='y':
                 while happy == 'n':
                     # Plot current band and reference band
                     plt.clf()
-                    plt.errorbar(lc[i][:,0],lc[i][:,1],lc[i][:,2],fmt='o',color=cols[i],label=i)
                     plt.errorbar(ref_stack[:,0],ref_stack[:,1],ref_stack[:,2],fmt='o',color='0.5',label='ref')
+                    plt.errorbar(lc[i][:,0],lc[i][:,1],lc[i][:,2],fmt='o',color=cols[i],label=i)
                     plt.gca().invert_yaxis()
                     plt.legend(numpoints=1,fontsize=16,ncol=2,frameon=True)
                     plt.xlabel(xlab)
