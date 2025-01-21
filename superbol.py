@@ -936,7 +936,7 @@ if useInt!='y':
                         # Default polynomial order to fit light curves
                         order1 = 4
                         # Choose order of polynomial fit to use
-                        order = input_param('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   ',launch.order)
+                        order = input_param('\n>> Order of polynomial to fit?['+str(order1)+']   ',launch.order)
                         # Or use default order
                         if not order: order = order1
 
