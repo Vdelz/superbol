@@ -12,11 +12,11 @@ import numpy as np
 
 
 GPY_AVAILABLE = False
-try:
-    import GPy
-    GPY_AVAILABLE = True
-except ImportError as err:
-    pass
+#try:
+#    import GPy
+#    GPY_AVAILABLE = True
+#except ImportError as err:
+#    pass
 
 
 def get_kernels(launch):
