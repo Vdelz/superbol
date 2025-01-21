@@ -591,6 +591,9 @@ if useInt!='y':
 # If light curves are already interpolated, reference is mainly for plotting so just pick first band
 else: ref_list = filters[0]
 
+if launch.ref == "all":
+    ref_list = filters
+
 for i in ref_list:
     print('\n* Using '+i+'-band for reference')
     
