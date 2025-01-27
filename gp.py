@@ -9,10 +9,10 @@ from sklearn.gaussian_process.kernels import Matern, WhiteKernel, ConstantKernel
 from sklearn.gaussian_process.kernels import RBF, RationalQuadratic, DotProduct
 import matplotlib.pyplot as plt
 import numpy as np
+import GPy
 
 
-
-GPY_AVAILABLE = False
+GPY_AVAILABLE = True
 #try:
 #    import GPy
 #    GPY_AVAILABLE = True

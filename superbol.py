@@ -935,7 +935,7 @@ if useInt!='y':
 
                     # Chose the type of algorithm to fit
                     print('\n> Choose type of algorithm to fit:')
-                    algo = input_param('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    [q]   ',launch.algo)
+                    algo = input_param('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    [g]   ',launch.algo)
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if algo == 'q':
                         break
