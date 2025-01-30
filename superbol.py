@@ -328,8 +328,18 @@ for root, dirs, fs in os.walk("example"):
             #files.append(os.path.join(root,file))
             files.append(file)
 
-sn_available = list(set(["_".join(f.split("_")[:-1]) for f in files if "README" not in f]))
-print(sn_available)
+print("\n  List of available SuperNovae")
+sn_available = sorted(list(set(["_".join(f.split("_")[:-1]) for f in files if "read" not in f.lower()])))
+longest_name = max([len(sn) for sn in sn_available])+3
+max_line_size , max_col_size = os.get_terminal_size()
+line_size = max_line_size
+for sn_av in sn_available:
+    if line_size >= max_line_size:
+        print("\n    ",end="")
+        line_size = longest_name
+    print(sn_av.ljust(longest_name," "),end="");
+    line_size += longest_name
+print("\n\n  If the Supernova is not in the list make sure the files are inside the example folder")
 
 # SN name defines names of input and output files
 sn = input_param('\n> Enter SN name:   ',launch.sn)
@@ -591,6 +601,9 @@ if useInt!='y':
 # If light curves are already interpolated, reference is mainly for plotting so just pick first band
 else: ref_list = filters[0]
 
+if launch.ref == "all":
+    ref_list = filters
+
 for i in ref_list:
     print('\n* Using '+i+'-band for reference')
     
@@ -771,7 +784,7 @@ z = float(z)
 
 if z<10:
     # Redshift always less than 10, distance modulus always greater, so easy to distinguish
-    print('Redshift entered (or DM=0)')
+    print('  Redshift entered (or DM=0)')
 
     t2 = ''
 
@@ -829,7 +842,7 @@ if z<10:
     #############################################
 
     # Check value of first light curve point to see if likely absolute or apparent mag
-    print('\n* First ref band mag = %.2f' %ref_stack[0,1])
+    print('\n* First ref band mag = %.2f\n' %ref_stack[0,1])
     absol='n'
     if ref_stack[0,1] < 0:
         # If negative mag, must be absolute (but check!)
@@ -910,8 +923,8 @@ if useInt!='y':
                 while happy == 'n':
                     # Plot current band and reference band
                     plt.clf()
-                    plt.errorbar(lc[i][:,0],lc[i][:,1],lc[i][:,2],fmt='o',color=cols[i],label=i)
                     plt.errorbar(ref_stack[:,0],ref_stack[:,1],ref_stack[:,2],fmt='o',color='0.5',label='ref')
+                    plt.errorbar(lc[i][:,0],lc[i][:,1],lc[i][:,2],fmt='o',color=cols[i],label=i)
                     plt.gca().invert_yaxis()
                     plt.legend(numpoints=1,fontsize=16,ncol=2,frameon=True)
                     plt.xlabel(xlab)
@@ -921,7 +934,7 @@ if useInt!='y':
                     plt.draw()
 
                     # Chose the type of algorithm to fit
-                    print('\n>> Chose type of algorithm to fit:')
+                    print('\n> Choose type of algorithm to fit:')
                     algo = input_param('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    [q]   ',launch.algo)
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if algo == 'q':
@@ -933,7 +946,7 @@ if useInt!='y':
                         # Default polynomial order to fit light curves
                         order1 = 4
                         # Choose order of polynomial fit to use
-                        order = input_param('\n>> Order of polynomial to fit?(q to quit and use constant colour)['+str(order1)+']   ',launch.order)
+                        order = input_param('\n>> Order of polynomial to fit?['+str(order1)+']   ',launch.order)
                         # Or use default order
                         if not order: order = order1
 
@@ -1173,8 +1186,14 @@ for i in lc_int:
 #        print('\n* Converting UV bands to Vega')
 
 
-print('\nDefault photometric systems:')
-print(default_sys)
+print('\n  Default photometric systems:')
+for photometric_sys in set([v for k,v in default_sys.items()]):
+    print("    "+photometric_sys,end=" :  ")
+    for k,v in default_sys.items():
+        if v == photometric_sys:
+            print(k,end=" ")
+    print()
+
 
 is_correct_system = input_param('\n> Are all bands in their default systems? ([y]/n)  ',launch.defsys)
 
@@ -1282,7 +1301,7 @@ Lbb_opt_err_arr = []
 bluecut = 1
 sup = 0
 
-do_absorb = input_param('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n can give better fit in UV. Apply absorption? [n]   ')
+do_absorb = input_param('\n> Absorbed blackbody L_uv(lam) = L_bb(lam)*(lam/lam_max)^x\n  can give better fit in UV. Apply absorption? [n]   ')
 if not do_absorb: do_absorb = 'n'
 
 if do_absorb in ('y','yes'):

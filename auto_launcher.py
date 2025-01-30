@@ -1,41 +1,52 @@
+"""
+This module allows to skip the interrupting questions
+along the original Superbol code by loading the parameters externally at launch
+"""
 import argparse
 
 def get_params():
-    parser = argparse.ArgumentParser(description="example usage: superbol.py -sn SN1987A")
-    parser.add_argument("-sn", "--sn", type=str, help="Name of the Supernova REQUIRED", required=True)
-    parser.add_argument("-ff", "--findfiles", type=str, default="y", help="Find input files automatically")
-    parser.add_argument("-u", "--use", type=str, default="n", help="Use interpolated LC")
-    parser.add_argument("-l", "--limitMJDs", type=str, default="n", help="Limit time range to use")
-    parser.add_argument("-b", "--bands", type=str, default="", help="Enter bands to use (blue to red)")
-    parser.add_argument("-ref", "--ref", type=str, default="", help="Choose reference band(s) for sampling epochs")
-    parser.add_argument("-fm", "--findmax", type=str, default="n", help="Interactively find maximum")
-    parser.add_argument("-z", "--z", type=float, default=None, help="enter SN redshift or distance modulus") # from file
-    parser.add_argument("-i", "--ilc", type=str, default="y", help="Interpolate light curves interactively")
-    parser.add_argument("-a", "--algo", type=str, default="ask", help="Chose type of algorithm to fit")
-    parser.add_argument("-gpy", "--gpy", type=str, default="y", help="y: Use GPy or n: Use Sklearn")
-    parser.add_argument("-k", "--kernel", type=str, default="all", help="Chose kernels")
-    parser.add_argument("-kp", "--kerpar", type=str, default="y", help="Go with default Kernel Params")
-    parser.add_argument("-happy", "--happy", type=str, default="ask", help="Chose if you are happy with fit by default")
-    parser.add_argument("-ord", "--order", type=int, default=4, help="Order of polynomial to fit")
-    parser.add_argument("-ete", "--ete", type=str, default="p", help="Early-time extrapolation")
-    parser.add_argument("-lte", "--lte", type=str, default="c", help="Late-time extrapolation")
-    parser.add_argument("-ebv", "--ebv", type=float, default=None, help="Extinction correction") # from file
-    parser.add_argument("-ds", "--defsys", type=str, default="y", help="Are all bands in their default systems")
-    parser.add_argument("-luv", "--luv", type=str, default="c", help="Apply blackbody absorption L_uv(lam)")
-    parser.add_argument("-t0", "--t0", type=float, default=10000, help="Initial guess for temperature in K")
-    parser.add_argument("-r0", "--r0", type=float, default=1.0e15, help="Initial guess for starting radius in cm")
+    """
+    This function allows to load the answers to the questions
+    by parsing the parameters given externally at launch
+    """
+    args = argparse.ArgumentParser(description="example usage: superbol.py -sn SN1987A")
+    args.add_argument("-sn", "--sn", type=str, default="ask", help="Name of the Supernova")
+    args.add_argument("-ff", "--findfiles", type=str, default="ask", help="Find inputs automatically")
+    args.add_argument("-u", "--use", type=str, default="ask", help="Use interpolated LC")
+    args.add_argument("-l", "--limitMJDs", type=str, default="ask", help="Limit time range to use")
+    args.add_argument("-b", "--bands", type=str, default="ask", help="Bands to use (blue to red)")
+    args.add_argument("-ref", "--ref", type=str, default="ask", help="Ref band for sampling epochs")
+    args.add_argument("-fm", "--findmax", type=str, default="ask", help="Interactively find maximum")
+    args.add_argument("-z", "--z", type=float, default=None, help="SN redshift or distance modulus")
+    args.add_argument("-i", "--ilc", type=str, default="ask", help="Interpolate LCs interactively")
+    args.add_argument("-a", "--algo", type=str, default="ask", help="Chose algorithm to fit")
+    args.add_argument("-gpy", "--gpy", type=str, default="ask", help="Use y for GPy or n for Sklearn")
+    args.add_argument("-k", "--kernel", type=str, default="ask", help="Chose kernels")
+    args.add_argument("-kp", "--kerpar", type=str, default="ask", help="Use default Kernel Params")
+    args.add_argument("-happy", "--happy", type=str, default="ask", help="Happy with fit")
+    args.add_argument("-ord", "--order", type=int, default=None, help="Order of polynomial fit")
+    args.add_argument("-ete", "--ete", type=str, default="ask", help="Early-time extrapolation")
+    args.add_argument("-lte", "--lte", type=str, default="ask", help="Late-time extrapolation")
+    args.add_argument("-ebv", "--ebv", type=float, default=None, help="Extinction correction")
+    args.add_argument("-ds", "--defsys", type=str, default="ask", help="All bands in default systems")
+    args.add_argument("-luv", "--luv", type=str, default="ask", help="Blackbody absorption L_uv")
+    args.add_argument("-t0", "--t0", type=float, default=None, help="Initial guess for T in K")
+    args.add_argument("-r0", "--r0", type=float, default=None, help="Initial guess for R in cm")
 
-    return parser.parse_args()
+    return args.parse_args()
 
 
 def input_param(query,param="default"):
+    """
+    This function replaces all the input() functions in the original Superbol code
+    by getting the input from the arguments list loaded above
+    """
     if param == "default":
         if "]" not in query or "[" not in query:
             param = "ask"
         else:
             param = query.split("[")[-1].split("]")[0]
-    if param == "ask":
+    if param in ("ask" , 0):
         return input(query)
-    else:
-        print(query,param)
-        return param
+    print(query,param)
+    return param

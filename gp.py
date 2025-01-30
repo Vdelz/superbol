@@ -11,12 +11,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-gpy_available = False
-try:
-    import GPy
-    gpy_available = True
-except ImportError as err:
-    pass
+
+GPY_AVAILABLE = False
+#try:
+#    import GPy
+#    GPY_AVAILABLE = True
+#except ImportError as err:
+#    pass
 
 
 def get_kernels(launch):
@@ -24,7 +25,7 @@ def get_kernels(launch):
     Returns a dictionary of available kernels
     We can make this list as long as we want the rest will update automatically
     """
-    if launch.gpy=="y" and gpy_available:
+    if launch.gpy=="y" and GPY_AVAILABLE:
         kernels = {
         "Matern32": GPy.kern.Matern32(input_dim=1),
         "Matern52": GPy.kern.Matern52(input_dim=1),
@@ -96,7 +97,7 @@ def select_params(kernel_choices, launch):
     return kernels_custom
 
 
-def apply_gaussian_process(times, luminosities, new_times, kernels_custom, launch):
+def apply_gp(times, luminosities, new_times, kernels_custom, launch):
     """
     Args:
         times (array-like): dates of the in-band observation in MJD.
@@ -112,7 +113,7 @@ def apply_gaussian_process(times, luminosities, new_times, kernels_custom, launc
     new_times = np.array(new_times).reshape(-1, 1)
     t_plot = np.arange(np.min(new_times),np.max(new_times),1).reshape(-1, 1)
     # initialize, trains the regressor and interpolates
-    if launch.gpy=="y" and gpy_available:
+    if launch.gpy=="y" and GPY_AVAILABLE:
         combo_kernel = GPy.kern.src.add.Add(kernels_custom)
         gpr = GPy.models.GPRegression(times, luminosities, combo_kernel)
         gpr.optimize(messages=False)
@@ -134,6 +135,47 @@ def apply_gaussian_process(times, luminosities, new_times, kernels_custom, launc
     return lc_predictions.flatten(), lc_pred_err.flatten()
 
 
+def estimate_error_gp(times, lc_val, kernels_custom, launch):
+    """
+    This function enables to estimate the Gaussian process error
+    by performing a 2fold cross validation.
+    The 2 subsets of points are the even and the odds instead of random
+    """
+    # reshapes the inputs just in case
+    times = np.array(times).reshape(-1)
+    lc_val = np.array(lc_val).reshape(-1)
+
+    twofold_cross_valid_err = 0
+    mean_estimated_err = 0
+    max_twofold_err = 0
+    max_estimated_err = 0
+    argmax_est = np.nan
+    argmax_eff = np.nan
+
+    for block in range(2):
+        t_train,t_val = times[block::2],times[1-block::2]
+        l_train,l_val_true = lc_val[block::2],lc_val[1-block::2]
+        l_val_pred, est_errs = apply_gp(t_train, l_train, t_val, kernels_custom, launch)
+        effective_errs = np.sqrt((l_val_pred-l_val_true)**2)
+
+        twofold_cross_valid_err += np.sum(effective_errs)
+        mean_estimated_err += np.sum(est_errs)
+        max_twofold_err = max(max_twofold_err,np.max(effective_errs))
+        max_estimated_err = max(max_estimated_err,np.max(est_errs))
+        if max_twofold_err == np.max(effective_errs):
+            argmax_eff = t_val[np.argmax(effective_errs)]
+        if max_estimated_err == np.max(est_errs):
+            argmax_est = t_val[np.argmax(est_errs)]
+
+    twofold_cross_valid_err = twofold_cross_valid_err/len(times)
+    mean_estimated_err = mean_estimated_err/len(times)
+    print("\n  Interpolation error estimates performing half decimation")
+    print("    Mean 2fold_cross_valid_error = ",twofold_cross_valid_err,"magnitudes")
+    print("    Max  2fold_cross_valid_error = ",max_twofold_err,"magnitudes","at",argmax_eff)
+    print("    Mean gp estimated_error      = ",mean_estimated_err,"magnitudes")
+    print("    Max  gp estimated_error      = ",max_estimated_err,"magnitudes","at",argmax_est)
+
+
 def select_do_gp(times, lc_val, new_times, launch):
     """
     This function is the GP "main function caller".
@@ -141,27 +183,29 @@ def select_do_gp(times, lc_val, new_times, launch):
     """
     kernel_choices = select_kernels(launch)
     kernels_custom = select_params(kernel_choices,launch)
-    preds, errs = apply_gaussian_process(times, lc_val, new_times, kernels_custom, launch)
+    preds, errs = apply_gp(times, lc_val, new_times, kernels_custom, launch)
+    estimate_error_gp(times, lc_val, kernels_custom, launch)
     return preds, errs
 
 
-def gp_interpolate(lc, lc_int, ref_stack, i, cols, launch):
+def gp_interpolate(lc_orig, lc_int, ref_stack, i, cols, launch):
     """
     This is a wrapper around the GP process that binds with superbol code
     """
     try:
         # Pre filters data by eliminating nan values
-        valid = ~np.isnan(lc[i][:, 1])
-        times = lc[i][valid, 0]
-        lc_val = lc[i][valid, 1]
+        valid = ~np.isnan(lc_orig[i][:, 1])
+        times = lc_orig[i][valid, 0]
+        lc_val = lc_orig[i][valid, 1]
         new_times = ref_stack[:, 0]
         # Core of the Gaussian Process
         preds, errs = select_do_gp(times, lc_val, new_times, launch)
         # Put values where is needed and plots them
         lc_int[i] = np.column_stack((new_times, preds, errs))
         # Plots all teh other bands
-        for j in lc.keys():
-            plt.plot(lc[j][:, 0], lc[j][:, 1], "o", color=cols[j], label=j)
+        for j in lc_orig.keys():
+            plt.plot(lc_orig[j][:, 0], lc_orig[j][:, 1], "o",
+                    color=cols[j], label=j)
         # plots the fitted band with error bars and variance area
         plt.errorbar( new_times, preds, errs,
             fmt="x", color=cols[i], label=i + " GP fit" )
