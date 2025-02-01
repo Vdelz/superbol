@@ -16,7 +16,7 @@ def get_params():
     args.add_argument("-l", "--limitMJDs", type=str, default="ask", help="Limit time range to use")
     args.add_argument("-b", "--bands", type=str, default="ask", help="Bands to use (blue to red)")
     args.add_argument("-ref", "--ref", type=str, default="ask", help="Ref band for sampling epochs")
-    args.add_argument("-fm", "--findmax", type=str, default="ask", help="Interactively find maximum")
+    args.add_argument("-fm", "--findmax", type=str, default="n", help="Interactively find maximum")
     args.add_argument("-z", "--z", type=float, default=None, help="SN redshift or distance modulus")
     args.add_argument("-i", "--ilc", type=str, default="ask", help="Interpolate LCs interactively")
     args.add_argument("-a", "--algo", type=str, default="ask", help="Chose algorithm to fit")

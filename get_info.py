@@ -41,6 +41,13 @@ def get_property(name, property_key, default_value):
     print(f"  {name} not available from info")
     return default_value
 
+def get_t_explosion(name):
+    """
+    get t_explosion
+    """
+    return get_property(name, "t_explosion", 0)
+
+
 
 def get_z_red(name):
     """

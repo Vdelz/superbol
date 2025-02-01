@@ -1,0 +1,34 @@
+# ph	Lobs	err	L+BB	err	
+
+-50.76	6.56e+41	1.22e+40	7.49e+41	2.09e+40
+-48.81	6.45e+41	8.87e+39	7.42e+41	2.17e+40
+-48.26	6.64e+41	2.50e+39	8.36e+41	1.09e+41
+-47.16	6.86e+41	1.81e+39	8.34e+41	7.84e+40
+-46.33	7.05e+41	1.39e+39	8.38e+41	5.64e+40
+-43.24	7.73e+41	1.80e+39	9.30e+41	7.50e+40
+-35.29	9.44e+41	1.59e+39	1.12e+42	6.93e+40
+-26.47	1.96e+42	8.23e+41	1.95e+42	8.23e+41
+-22.62	4.21e+42	3.15e+42	3.74e+42	3.16e+42
+-17.61	8.14e+42	7.43e+42	6.86e+42	7.43e+42
+-16.68	8.78e+42	8.14e+42	7.37e+42	8.14e+42
+-3.90	1.27e+43	1.24e+43	1.05e+43	1.24e+43
+1.97	1.30e+43	1.27e+43	1.07e+43	1.27e+43
+9.86	1.30e+43	1.28e+43	1.08e+43	1.28e+43
+15.77	1.29e+43	1.28e+43	1.06e+43	1.28e+43
+23.63	1.27e+43	1.28e+43	1.03e+43	1.28e+43
+30.43	1.24e+43	1.28e+43	1.00e+43	1.28e+43
+39.22	1.22e+43	1.28e+43	9.74e+42	1.28e+43
+44.14	1.21e+43	1.28e+43	9.68e+42	1.28e+43
+68.74	1.22e+43	1.28e+43	9.70e+42	1.28e+43
+74.65	1.23e+43	1.28e+43	9.80e+42	1.28e+43
+
+#KEY
+# Lobs = integrate observed fluxes with no BB fit
+# L+BB = observed flux + BB fit extrapolation
+# See logL-obs_SN2006V_uBgVriYJH.txt and logL-bb_SN2006V_uBgVriYJH.txt for simple LC files
+# Methodology:
+# filters used:uBgVriYJH
+# redshift used:0.0158
+# extinction used:0.029
+# Flux and wavelength converted to rest-frame
+# BB fit below 1A suppressed by factor (lamda/1)^0

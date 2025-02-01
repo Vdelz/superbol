@@ -106,7 +106,7 @@ import warnings
 
 from gp import gp_interpolate
 from logo import print_logo
-from get_info import get_z_red, get_E_BV
+from get_info import get_z_red, get_E_BV, get_t_explosion
 from auto_launcher import get_params, input_param
 launch = get_params()
 #suppress warnings
@@ -267,10 +267,10 @@ wle = {'u': 3560,  'g': 4830, 'r': 6260, 'i': 7670, 'z': 8890, 'y': 9600, 'w':59
 # ATLAS values taken from Tonry et al 2018
 
 ##All values in 1e-11 erg/s/cm2/Angs
-#zp = {'u': 859.5, 'g': 466.9, 'r': 278.0, 'i': 185.2, 'z': 137.8, 'y': 118.2, 'w': 245.7, 'Y': 118.2,
-#      'U': 417.5, 'B': 632.0, 'V': 363.1, 'R': 217.7, 'I': 112.6, 'G': 240.0, 'E': 240.0,
-#      'J': 31.47, 'H': 11.38, 'K': 3.961, 'S': 536.2, 'D': 463.7, 'A': 412.3, 'F': 4801., 'N': 2119.,
-#      'o': 236.2, 'c': 383.3, 'W': 0.818, 'Q': 0.242}
+zp = {'u': 859.5, 'g': 466.9, 'r': 278.0, 'i': 185.2, 'z': 137.8, 'y': 118.2, 'w': 245.7, 'Y': 118.2,
+      'U': 417.5, 'B': 632.0, 'V': 363.1, 'R': 217.7, 'I': 112.6, 'G': 240.0, 'E': 240.0,
+      'J': 31.47, 'H': 11.38, 'K': 3.961, 'S': 536.2, 'D': 463.7, 'A': 412.3, 'F': 4801., 'N': 2119.,
+      'o': 236.2, 'c': 383.3, 'W': 0.818, 'Q': 0.242}
       
 # New Sept 2022: All ZPs from SVO filter service
 zp_AB = {'u': 867.6, 'g': 487.6, 'r': 282.9, 'i': 184.9, 'z': 98.6, 'y': 117.8, 'w': 303.8, 'Y': 117.8,
@@ -348,6 +348,8 @@ sn = input_param('\n> Enter SN name:   ',launch.sn)
 if not sn:
     print('\n* No name given; lets just call it `SN`...')
     sn = 'SN'
+
+
 
 # Keep outputs in this directory
 outdir = os.path.join('superbol_output',sn)
@@ -618,15 +620,178 @@ ref_stack = ref_stack[1:]
 
 ref_stack = ref_stack[ref_stack[:,0].argsort()]
 
+t_expl = get_t_explosion(sn)
+
+
+ref_choice = input("\n> Shift reference? [e=explosion / m=maximum / n=none]  ")
+if not ref_choice: 
+    ref_choice = 'n'  # valore di default
+
+if ref_choice.lower() == 'e':
+    print(f"\n* Shifting all times by t_expl = {t_expl} (JD).")
+    for j in lc:
+        lc[j][:,0] -= t_expl
+    ref_stack[:,0] -= t_expl
+    xlab = "Days from explosion"
+
+    print(f"\n* Shift done: now T= {t_expl} is the explosion.")
+
+elif ref_choice.lower() == 'm':
+    # User may want to have output in terms of days from maximum, so here we find max light in reference band
+    # Two options: fit light curve interactively, or just use brightest point. User specifies what they want to do
+
+    t1 = input('\n> Interactively find maximum?[n]')
+    if not t1:
+        # Default to not doing interactive fit
+        t1 = 'n'
+
+        # in this case check if user wants quick approximation
+        doSh = input('\n> Shift to approx maximum?[n] ')
+        # Default to not doing this either - i.e. leave light curve as it is
+        if not doSh: 
+            doSh = 'n'
+
+        if doSh=='y':
+            # If approx shift wanted, find time of brightest point in ref band to set as t=0
+            d = np.copy(ref_stack)
+            shift = d[:,0][np.argmin(d[:,1])]
+            # Loop over all bands and shift them
+            for j in lc:
+                lc[j][:,0] -= shift
+            ref_stack[:,0] -= shift
+
+            # update x-axis label
+            xlab += ' from approx maximum'
+            print('\n* Approx shift done')
+
+    if t1!='n':
+        # Here's where date of maximum is fit interactively, if user wanted it
+        # Start with approx shift of reference band
+        d = np.copy(ref_stack)
+        shift = d[:,0][np.argmin(d[:,1])]
+        d[:,0] -= shift
+
+        plt.clf()
+        # Plot reference band centred roughly on brightest point
+        plt.errorbar(d[:,0], d[:,1], d[:,2], fmt='o', color='0.5')
+
+        plt.ylim(max(d[:,1])+0.2, min(d[:,1])-0.2)
+        plt.xlabel(xlab + ' from approx maximum')
+        plt.ylabel('Magnitude')
+        plt.tight_layout(pad=0.5)
+        plt.draw()
+
+        # As long as happy ='n', user can keep refitting til they get a good result
+        happy = 'n'
+        print('\n### Begin polynomial fit to peak... ###')
+
+        # Default polynomial order =4
+        order1 = 4
+        # Only fit data at times < Xup from maximum light. Default is 50 days
+        Xup1 = 50
+
+        while happy == 'n':
+            print('\n### Select data range ###')
+            # Interactively set upper limit on times to fit
+            Xup = input_param('>> Cut-off phase for polynomial fit?['+str(Xup1)+']   ')
+            if not Xup: 
+                Xup = Xup1
+            Xup = float(Xup)
+            Xup1 = Xup
+
+            d1 = d[d[:,0] < Xup]
+
+            plt.clf()
+            # Plot only times < Xup
+            plt.errorbar(d1[:,0], d1[:,1], d1[:,2], fmt='o', color='0.5')
+            plt.ylim(max(d1[:,1])+0.4, min(d1[:,1])-0.2)
+            plt.tight_layout(pad=0.5)
+            plt.draw()
+
+            # Interactively set polynomial order
+            order = input_param('\n>> Order of polynomial to fit?['+str(order1)+']   ')
+            if not order: 
+                order = order1
+            order = int(order)
+
+            # Fit light curve with polynomial
+            fit = np.polyfit(d1[:,0], d1[:,1], deg=order)
+
+            # Plot the polynomial
+            days = np.arange(min(-40, min(d[:,0]))-10, Xup)
+            eq = 0
+            for i in range(len(fit)):
+                eq += fit[i] * days**(order-i)
+            plt.plot(days, eq, label='Fit order = %d' %order)
+
+            plt.ylabel('Magnitude')
+            plt.xlabel(xlab + ' from approx maximum')
+            plt.legend(numpoints=1, fontsize=16, ncol=2, frameon=True)
+            plt.xlim(min(d[:,0])-5, Xup)
+            plt.tight_layout(pad=0.5)
+            plt.draw()
+
+            # Check if user likes fit
+            happy = input('\n> Happy with fit?(y/[n])   ')
+            if not happy:
+                happy = 'n'
+
+        # After user is tired/satisfied with fit, check if they want to use the peak 
+        # of their most recent polynomial as t=0, or default to the brightest point
+        new_peak = input('> Use [p-olynomial] or o-bserved peak date?    ')
+        if not new_peak: 
+            new_peak = 'p'
+
+        xlab += ' from maximum'
+
+        # Plot reference band shifted to match polynomial peak
+        if new_peak=='p':
+            days = np.arange(d[:,0][np.argmin(d[:,1])]-10, d[:,0][np.argmin(d[:,1])]+10)
+            eq = 0
+            for i in range(len(fit)):
+                eq += fit[i]*days**(order-i)
+            peak = days[np.argmin(eq)]
+            print("Polynomial peak =", peak)
+            d[:,0] -= peak
+
+            plt.clf()
+            plt.errorbar(d[:,0], d[:,1], d[:,2], fmt='o', color='0.5')
+            plt.ylabel('Magnitude')
+            plt.xlabel(xlab)
+            plt.ylim(max(d[:,1])+0.2, min(d[:,1])-0.2)
+            plt.tight_layout(pad=0.5)
+            plt.draw()
+
+        # If user instead wants observed peak, that shift was already done!
+        if new_peak == 'o':
+            peak = 0
+
+        # Shift all light curves by same amount as reference band
+        for j in lc:
+            lc[j][:,0] -= (shift+peak)
+        ref_stack[:,0] -= (shift+peak)
+
+############################################
+# SEZIONE 3: Nessuno shift
+############################################
+else:
+    print("\n* No shift done. Times remain as in the original data.")
+
+plt.figure(1)
+plt.clf()
+
+
+
+"""
 # User may want to have output in terms of days from maximum, so here we find max light in reference band
 # Two options: fit light curve interactively, or just use brightest point. User specifies what they want to do
-t1 = input_param('\n> Interactively find maximum?[n]   ',launch.findmax)
+t1 = input('\n> Interactively find maximum?[n]')
 if not t1:
     # Default to not doing interactive fit
     t1 = 'n'
 
     # in this case check if user wants quick approximation
-    doSh = input_param('\n> Shift to approx maximum?[n] ')
+    doSh = input('\n> Shift to approx maximum?[n] ')
     # Default to not doing this either - i.e. leave light curve as it is
     if not doSh: doSh = 'n'
 
@@ -720,12 +885,12 @@ if t1!='n':
         plt.draw()
 
         # Check if user likes fit
-        happy = input_param('\n> Happy with fit?(y/[n])   ')
+        happy = input('\n> Happy with fit?(y/[n])   ')
         # Default is to try again!
         if not happy: happy = 'n'
 
     # After user tired/satisfied with fit, check if they want to use the peak of their most recent polynomial as t=0, or default to the brightest point
-    new_peak = input_param('> Use [p-olynomial] or o-bserved peak date?    ')
+    new_peak = input('> Use [p-olynomial] or o-bserved peak date?    ')
     # Default is to use polynomial for peak date
     if not new_peak: new_peak = 'p'
 
@@ -739,6 +904,7 @@ if t1!='n':
             # Loop allows calculation for arbitrary polynomial order
             eq += fit[i]*days**(order-i)
         peak = days[np.argmin(eq)]
+        print(peak)
         d[:,0] -= peak
         plt.clf()
         plt.errorbar(d[:,0],d[:,1],d[:,2],fmt='o',color='0.5')
@@ -761,6 +927,8 @@ if t1!='n':
 
 plt.figure(1)
 plt.clf()
+"""
+
 
 # Re-plot the light curves after shifting
 for i in filters:
