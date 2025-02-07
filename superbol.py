@@ -625,7 +625,7 @@ t_expl = get_t_explosion(sn)
 
 ref_choice = input("\n> Shift reference? [e=explosion / m=maximum / n=none]  ")
 if not ref_choice: 
-    ref_choice = 'n'  # valore di default
+    ref_choice = 'n'  
 
 if ref_choice.lower() == 'e':
     print(f"\n* Shifting all times by t_expl = {t_expl} (JD).")
@@ -634,7 +634,19 @@ if ref_choice.lower() == 'e':
     ref_stack[:,0] -= t_expl
     xlab = "Days from explosion"
 
-    print(f"\n* Shift done: now T= {t_expl} is the explosion.")
+    print(f"\n* Shift done: now T= 0 is the explosion.")
+
+    plt.figure()
+    for j in lc:
+        plt.errorbar(lc[j][:,0], lc[j][:,1], lc[j][:,2], fmt='o', label=j)
+    plt.xlabel(xlab + ' from t_explosion')
+    plt.ylabel('Magnitude')
+    plt.title("Light curves shifted to explosion time")
+    plt.legend()  
+    plt.gca().invert_yaxis()  
+    plt.tight_layout(pad=0.5)
+    plt.draw()
+
 
 elif ref_choice.lower() == 'm':
     # User may want to have output in terms of days from maximum, so here we find max light in reference band
@@ -771,9 +783,7 @@ elif ref_choice.lower() == 'm':
             lc[j][:,0] -= (shift+peak)
         ref_stack[:,0] -= (shift+peak)
 
-############################################
-# SEZIONE 3: Nessuno shift
-############################################
+
 else:
     print("\n* No shift done. Times remain as in the original data.")
 
