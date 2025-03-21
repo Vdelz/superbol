@@ -32,6 +32,7 @@ def get_params():
     args.add_argument("-luv", "--luv", type=str, default="ask", help="Blackbody absorption L_uv")
     args.add_argument("-t0", "--t0", type=float, default=None, help="Initial guess for T in K")
     args.add_argument("-r0", "--r0", type=float, default=None, help="Initial guess for R in cm")
+    args.add_argument("-shift", "--shift", type=str, default=None, choices=['e', 'm', 'n'], help="Choose if and how perform a shift in the analysis")
 
     return args.parse_args()
 

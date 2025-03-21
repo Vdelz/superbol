@@ -623,7 +623,8 @@ ref_stack = ref_stack[ref_stack[:,0].argsort()]
 t_expl = get_t_explosion(sn)
 
 
-ref_choice = input("\n> Shift reference? [e=explosion / m=maximum / n=none]  ")
+#ref_choice = input("\n> Shift reference? [e=explosion / m=maximum / n=none]  ")
+ref_choice = launch.shift
 if not ref_choice: 
     ref_choice = 'n'  
 
@@ -1163,7 +1164,7 @@ if useInt!='y':
                     intKey += '\n# '+i+': Linear interp; extrap=c'
                 if algo == 'g':
                     # TODO enable extrapolation using costant color
-                    intKey += '\n# '+i+': Gaussian Process used for interp and extrap'
+                    intKey += '\n# '+i+': Gaussian Process used for intertp and extrap'
                 if algo == 'p':
                     # If user was happy with fit, add different interpolation string to output
                     intKey += '\n# '+i+': fit order='+str(order)+'; extrap method '
@@ -1301,6 +1302,7 @@ if useInt!='y':
 
     # Open file in superbol output directory to write light curves
     int_file = open(outdir+'/interpolated-lcs_'+sn+'_'+filters+'.txt','wb')
+    header_extra = "# Redshift scelto in quest'analisi: " + str(z) + "\n"
 
     # Construct header
     cap = '#phase\t'
@@ -1308,9 +1310,13 @@ if useInt!='y':
         # Add a column heading for each filter
         cap = cap+i+'\terr\t'
     cap +='\n'
+    #cap = header_extra + cap + "\n"
+    footer_str = intKey + "\n# Redshift scelto in quest'analisi: " + str(z) +"\n# "
+
+
 
     # Save to file, including header and footer containing log of interpolation methods
-    np.savetxt(int_file,int_out,fmt='%.2f',delimiter='\t',header=cap,footer=intKey,comments='#')
+    np.savetxt(int_file,int_out,fmt='%.2f',delimiter='\t',header=cap,footer=footer_str,comments='#')
     # Close output file
     int_file.close()
 
