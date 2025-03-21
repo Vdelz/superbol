@@ -185,7 +185,7 @@ def select_do_gp(times, lc_val, new_times, launch):
     kernels_custom = select_params(kernel_choices,launch)
     preds, errs = apply_gp(times, lc_val, new_times, kernels_custom, launch)
     estimate_error_gp(times, lc_val, kernels_custom, launch)
-    return preds, errs
+    return preds, errs, kernels_custom
 
 
 def gp_interpolate(lc_orig, lc_int, ref_stack, i, cols, launch):
@@ -199,7 +199,8 @@ def gp_interpolate(lc_orig, lc_int, ref_stack, i, cols, launch):
         lc_val = lc_orig[i][valid, 1]
         new_times = ref_stack[:, 0]
         # Core of the Gaussian Process
-        preds, errs = select_do_gp(times, lc_val, new_times, launch)
+        preds, errs, kernels_custom = select_do_gp(times, lc_val, new_times, launch)
+        print(kernels_custom)
         # Put values where is needed and plots them
         lc_int[i] = np.column_stack((new_times, preds, errs))
         # Plots all teh other bands
@@ -210,5 +211,11 @@ def gp_interpolate(lc_orig, lc_int, ref_stack, i, cols, launch):
         plt.errorbar( new_times, preds, errs,
             fmt="x", color=cols[i], label=i + " GP fit" )
         plt.gca().invert_yaxis()
+
+        # Return useful info (e.g., kernel used)
+        return f"Gaussian Process fit successful. Kernel used: {kernels_custom}"
+
     except Exception as exc:  # pylint: disable=broad-except
-        print(f"  Error in Gaussian Process fit: {exc}")
+        error_msg = f"  Error in Gaussian Process fit: {exc}"
+        print(error_msg)
+        return error_msg # return error message

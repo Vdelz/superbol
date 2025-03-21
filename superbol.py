@@ -906,7 +906,7 @@ if useInt!='y':
         # - what if there are only one or two points??? Use colour?
 
         # Use this to keep tabs on method used, and append to output file
-        intKey = '\n# Reference bands: '
+        intKey = '\n# Reference bands: ' + ','#modifica
         for refband in ref_list:
             intKey += refband
 
@@ -917,7 +917,7 @@ if useInt!='y':
             else:
                 print('\n### '+i+'-band ###')
 
-
+                algo= 'q'
                 # Keep looping until happy
                 happy = 'n'
                 while happy == 'n':
@@ -936,11 +936,12 @@ if useInt!='y':
                     # Chose the type of algorithm to fit
                     print('\n> Choose type of algorithm to fit:')
                     algo = input_param('\n   q: costant color\n   p: polinomial\n   g: Gaussian Process    [q]   ',launch.algo)
+                    gp_info = "None"  # default value
                     # If user decides they can't get a good fit, enter q to use simple linear interpolation and constant-colour extrapolation
                     if algo == 'q':
                         break
                     if algo == 'g':
-                        gp_interpolate(lc, lc_int, ref_stack, i, cols, launch)
+                        gp_info = gp_interpolate(lc, lc_int, ref_stack, i, cols, launch)
                     if algo == 'p':
                         
                         # Default polynomial order to fit light curves
@@ -1121,21 +1122,25 @@ if useInt!='y':
         int_out[:,2*i+1] = lc_int[filters[i]][:,1]
         int_out[:,2*i+2] = lc_int[filters[i]][:,2]
 
+    #---
     # Open file in superbol output directory to write light curves
-    int_file = open(outdir+'/interpolated-lcs_'+sn+'_'+filters+'.txt','wb')
+    int_file = open(outdir + '/interpolated-lcs_' + sn + '_' + filters + '.txt', 'wb')
+    header_extra = "# Redshift scelto in quest'analisi: " + str(z)
 
     # Construct header
     cap = '#phase\t'
     for i in filters:
         # Add a column heading for each filter
-        cap = cap+i+'\terr\t'
-    cap +='\n'
+        cap = cap + i + '\terr\t'
+    cap += '\n'
+    # cap = header_extra + cap + "\n"
+    footer_str = intKey + "\n# Redshift scelto in quest'analisi: " + str(z)
 
     # Save to file, including header and footer containing log of interpolation methods
-    np.savetxt(int_file,int_out,fmt='%.2f',delimiter='\t',header=cap,footer=intKey,comments='#')
+    np.savetxt(int_file, int_out, fmt='%.2f', delimiter='\t', header=cap, footer=footer_str, comments='#')
     # Close output file
     int_file.close()
-
+    #---
     # Plot interpolated lcs
     print('\n* Displaying all interpolated/extrapolated LCs')
     plt.figure(1)
@@ -1265,17 +1270,20 @@ if doKcorr == 'y':
     print('\n* Converting to rest frame')
 
 # construct some notes for output file
-method = '\n# Methodology:'
-method += '\n# filters used:'+filters
-method += '\n# redshift used:'+str(z)
-method += '\n# extinction used:'+str(ebv)
+method =  '\n\n# Methodology'
+method += '\n# - filters used: '+filters
+method += '\n# - redshift used: '+str(z)
+method += '\n# - extinction used: '+str(ebv)
 
 if doKcorr == 'y':
     method += '\n# Flux and wavelength converted to rest-frame'
 else:
     method += '\n# Wavelengths used in observer frame (data already K-corrected?)'
 
+method += '\n# algo used: '+str(algo)
 
+gp_info = gp_interpolate(lc, lc_int, ref_stack, i, cols, launch)
+method += '\n# Info about Gaussian Process: ' + str(gp_info)
 
 print('\n######### Step 6: Fit blackbodies and integrate flux #########')
 
